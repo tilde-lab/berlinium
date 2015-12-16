@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title></title>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<link type="text/css" href="~.css" rel="stylesheet" media="screen" />
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/sockjs/0.3/sockjs.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/jstorage/0.4.12/jstorage.min.js"></script>
+<script type="text/javascript" src="jquery.tablesorter.min.js"></script>
+<script type="text/javascript" src="jquery.flot.min.js"></script>
+<script type="text/javascript" src="jquery.nos.min.js"></script>
+<script type="text/javascript" src="core.js"></script>
+</head>
+<body>
+
+
+<!-- SEARCH INIT BOX -->
+<div id="initbox"><div class="btn btn2 left" id="init_trigger" style="width:130px;">search</div><div class="btn btn3 left" id="cnl_trigger" style="width:100px;">cancel</div></div>
+
+
+<!-- LOADING BOX -->
+<div id="loadbox">Loading...</div>
+
+
+<!-- RESULTS COUNT -->
+<div id="countbox"></div>
+
+
+<!-- NOTIFIER BOX -->
+<div id="notifybox" class="_closable">
+    <div class="cross _close" style="margin-right:4px;margin-top:4px;"></div>
+    <div id="errormsg">Your browser doesn't work properly here.<br />Please, try to use its newer version.<br />Thank you in advace and sorry for inconvenience.</div>
+</div>
+
+
+<!-- SETTINGS / USER BOX: ALWAYS VISIBLE! -->
+<div id="pre_user_box">
+    <div id="settings_trigger" class="btn btn2 left">settings</div>
+</div>
+
+
+<!-- USER PROFILE AND SETTINGS WINDOW -->
+<div id="profile_holder" class="shadow _closable">
+    <div id="settings_frame">
+    <div id="settings_holder">
+        <div class="cross _close"></div>
+
+        <ul id="settings_menu" class="ipane_ctrl">
+            <li rel="cols">columns</li>
+            <li rel="table">table</li>
+            <li rel="units">units</li>
+        </ul>
+
+        <div class="ipane" rel="cols">
+            <div style="padding-top:12px;">Columns to display <b>(max. <span id="maxcols"></span>)</b>:</div>
+
+            <div id="settings_cols"></div>
+
+            <div class="clear" style="padding-top:10px;"></div>
+
+            <div class="btn settings_apply" style="width:120px;margin:0 auto;">apply and save</div>
+        </div>
+
+        <div class="ipane" rel="table">
+            <br /><br />
+            <div class="left" style="clear:none;width:50%;margin-left:25px">Max.number of items in table:</div>
+            <div id="ipane_maxitems_holder" class="right" style="clear:none;width:35%;margin-right:25px"></div>
+
+            <div><br /><input type="checkbox" id="settings_objects_expand" /> <label for="settings_objects_expand">click by table opens a window</label></div>
+
+            <div class="clear"></div>
+
+            <div class="btn settings_apply" style="width:120px;margin:0 auto;">apply and save</div>
+        </div>
+
+        <div class="ipane" rel="units">
+            <form class="_hotkeyable" method="post">
+                <br /><br />
+                <div id="ipane_units_holder"></div>
+                <input type="submit" style="display:none" />
+            </form>
+            <div class="btn settings_apply _hotkey" style="width:120px;margin:0 auto;">apply and save</div>
+        </div>
+
+    </div>
+    </div>
+</div>
+
+
+<!-- CLONABLE OBJECT LAYOUT -->
+<div id="object_factory" class="object_factory_holder shadow">
+    <div class="object_holder">
+
+    <!-- OBJECT MAIN LAYOUT LEFT SIDE -->
+    <div class="object_ctx_left">
+        <ul class="ipane_ctrl">
+            <li rel="summary">summary</li>
+            <li rel="vib" style="display:none;">phonons</li>
+            <li rel="inp" style="display:none;">input file</li>
+            <li rel="optstory" style="display:none;">geom.opt.</li>
+        </ul>
+
+        <div class="ipane" rel="summary">
+        </div>
+
+        <div class="ipane loading" rel="vib">
+            <div class="ipane_local_menu">
+                <div class="btn btn2 left ph_degenerated_trigger">show degenerated</div>
+                <div class="btn btn2 left ph_animate_trigger">animate</div>
+            </div>
+            <div class="freqs_table_holder">
+                <table class="freqs_holder">
+                <thead>
+                <tr>
+                <th width="25%" class="thsorter">BZ point</th>
+                <th width="14%" class="thsorter">Irrep</th>
+                <th width="25%" class="thsorter">Value, <span class="units-phonons">cm<sup>-1</sup></span></th>
+                <th width="20%" class="thsorter">Raman-active</th>
+                <th width="16%" class="thsorter">IR-active</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="ipane" rel="inp">
+        </div>
+
+        <div class="ipane loading" rel="optstory">
+            <div class="ipane_local_menu center"></div>
+            <div class="optstory_holder flot_holder"></div>
+        </div>
+    </div>
+
+    <!-- OBJECT MAIN LAYOUT RIGHT SIDE -->
+    <div class="object_ctx_right">
+        <ul class="ipane_ctrl">
+            <li rel="3dview">3D-view</li>
+            <li rel="e_dos" style="display:none;">el.DOS</li>
+            <li rel="e_bands" style="display:none;">el.bands</li>
+            <li rel="ph_dos" style="display:none;">vib.DOS</li>
+            <li rel="ph_bands" style="display:none;">vib.bands</li>
+            <li rel="estory" style="display:none;">energy conv.</li>
+        </ul>
+
+        <div class="cross _destroy"></div>
+
+        <div class="ipane loading" rel="3dview">
+            <div class="renderer"></div>
+        </div>
+
+        <div class="ipane loading" rel="ph_dos">
+            <div class="ipane_local_menu center">
+                <div class="btn btn2 right export_plot">export</div>
+            </div>
+            <div class="ph_dos_holder flot_holder"></div>
+        </div>
+
+        <div class="ipane loading" rel="e_dos">
+            <div class="ipane_local_menu center">
+                <div class="btn btn2 right export_plot">export</div>
+            </div>
+            <div class="e_dos_holder flot_holder"></div>
+        </div>
+
+        <div class="ipane loading" rel="ph_bands">
+            <div class="ipane_local_menu center">
+                <div class="btn btn2 right export_plot">export</div>
+            </div>
+            <div class="ph_bands_holder flot_holder"></div>
+        </div>
+
+        <div class="ipane loading" rel="e_bands">
+            <div class="ipane_local_menu center">
+                <div class="btn btn2 right export_plot">export</div>
+            </div>
+            <div class="e_bands_holder flot_holder"></div>
+        </div>
+
+        <div class="ipane loading" rel="estory">
+            <div class="ipane_local_menu center"></div>
+            <div class="estory_holder flot_holder"></div>
+        </div>
+    </div>
+    </div>
+</div>
+
+
+<!-- CLONABLE MENDELEEV LAYOUT -->
+<div id="mendeleev_table_factory" class="mendeleev_table_factory_holder">
+<div class="mendeleev_table_holder">
+<table>
+<tr>
+<td><div class="md1">H</div></td>
+<td colspan="16"></td>
+<td><div class="md2">He</div></td>
+</tr>
+<tr>
+<td><div class="md3">Li</div></td>
+<td><div class="md4">Be</div></td>
+<td colspan="10"></td>
+<td><div class="md5">B</div></td>
+<td><div class="md6">C</div></td>
+<td><div class="md7">N</div></td>
+<td><div class="md8">O</div></td>
+<td><div class="md9">F</div></td>
+<td><div class="md10">Ne</div></td>
+</tr>
+<tr>
+<td><div class="md11">Na</div></td>
+<td><div class="md12">Mg</div></td>
+<td colspan="10"></td>
+<td><div class="md13">Al</div></td>
+<td><div class="md14">Si</div></td>
+<td><div class="md15">P</div></td>
+<td><div class="md16">S</div></td>
+<td><div class="md17">Cl</div></td>
+<td><div class="md18">Ar</div></td>
+</tr>
+<tr>
+<td><div class="md19">K</div></td>
+<td><div class="md20">Ca</div></td>
+<td><div class="md21">Sc</div></td>
+<td><div class="md22">Ti</div></td>
+<td><div class="md23">V</div></td>
+<td><div class="md24">Cr</div></td>
+<td><div class="md25">Mn</div></td>
+<td><div class="md26">Fe</div></td>
+<td><div class="md27">Co</div></td>
+<td><div class="md28">Ni</div></td>
+<td><div class="md29">Cu</div></td>
+<td><div class="md30">Zn</div></td>
+<td><div class="md31">Ga</div></td>
+<td><div class="md32">Ge</div></td>
+<td><div class="md33">As</div></td>
+<td><div class="md34">Se</div></td>
+<td><div class="md35">Br</div></td>
+<td><div class="md36">Kr</div></td>
+</tr>
+<tr>
+<td><div class="md37">Rb</div></td>
+<td><div class="md38">Sr</div></td>
+<td><div class="md39">Y</div></td>
+<td><div class="md40">Zr</div></td>
+<td><div class="md41">Nb</div></td>
+<td><div class="md42">Mo</div></td>
+<td><div class="md43">Tc</div></td>
+<td><div class="md44">Ru</div></td>
+<td><div class="md45">Rh</div></td>
+<td><div class="md46">Pd</div></td>
+<td><div class="md47">Ag</div></td>
+<td><div class="md48">Cd</div></td>
+<td><div class="md49">In</div></td>
+<td><div class="md50">Sn</div></td>
+<td><div class="md51">Sb</div></td>
+<td><div class="md52">Te</div></td>
+<td><div class="md53">I</div></td>
+<td><div class="md54">Xe</div></td>
+</tr>
+<tr>
+<td><div class="md55">Cs</div></td>
+<td><div class="md56">Ba</div></td>
+<td><div class="md71">Lu</div></td>
+<td><div class="md72">Hf</div></td>
+<td><div class="md73">Ta</div></td>
+<td><div class="md74">W</div></td>
+<td><div class="md75">Re</div></td>
+<td><div class="md76">Os</div></td>
+<td><div class="md77">Ir</div></td>
+<td><div class="md78">Pt</div></td>
+<td><div class="md79">Au</div></td>
+<td><div class="md80">Hg</div></td>
+<td><div class="md81">Tl</div></td>
+<td><div class="md82">Pb</div></td>
+<td><div class="md83">Bi</div></td>
+<td><div class="md84">Po</div></td>
+<td><div class="md85">At</div></td>
+<td><div class="md86">Rn</div></td>
+</tr>
+<tr>
+<td><div class="md87">Fr</div></td>
+<td><div class="md88">Ra</div></td>
+<td><div class="md103">Lr</div></td>
+<td><div class="md104">Rf</div></td>
+<td><div class="md105">Db</div></td>
+<td><div class="md106">Sg</div></td>
+<td><div class="md107">Bh</div></td>
+<td><div class="md108">Hs</div></td>
+<td><div class="md109">Mt</div></td>
+<td><div class="md110">Ds</div></td>
+<td><div class="md111">Rg</div></td>
+<td><div class="md112">Cn</div></td>
+<td><div class="md113">Uut</div></td>
+<td><div class="md114">Fl</div></td>
+<td><div class="md115">Uup</div></td>
+<td><div class="md116">Lv</div></td>
+<td><div class="md117">Uus</div></td>
+<td><div class="md118">Uuo</div></td>
+</tr>
+<tr>
+<td colspan="2"></td>
+<td><div class="md57">La</div></td>
+<td><div class="md58">Ce</div></td>
+<td><div class="md59">Pr</div></td>
+<td><div class="md60">Nd</div></td>
+<td><div class="md61">Pm</div></td>
+<td><div class="md62">Sm</div></td>
+<td><div class="md63">Eu</div></td>
+<td><div class="md64">Gd</div></td>
+<td><div class="md65">Tb</div></td>
+<td><div class="md66">Dy</div></td>
+<td><div class="md67">Ho</div></td>
+<td><div class="md68">Er</div></td>
+<td><div class="md69">Tm</div></td>
+<td><div class="md70">Yb</div></td>
+<td colspan="2"></td>
+</tr>
+<tr>
+<td colspan="2"></td>
+<td><div class="md89">Ac</div></td>
+<td><div class="md90">Th</div></td>
+<td><div class="md91">Pa</div></td>
+<td><div class="md92">U</div></td>
+<td><div class="md93">Np</div></td>
+<td><div class="md94">Pu</div></td>
+<td><div class="md95">Am</div></td>
+<td><div class="md96">Cm</div></td>
+<td><div class="md97">Bk</div></td>
+<td><div class="md98">Cf</div></td>
+<td><div class="md99">Es</div></td>
+<td><div class="md100">Fm</div></td>
+<td><div class="md101">Md</div></td>
+<td><div class="md102">No</div></td>
+<td colspan="2"></td>
+</tr>
+</table>
+</div>
+</div>
+
+
+<!-- COLUMN PLOT -->
+<div id="column_plot_holder" class="shadow _closable">
+    <div class="cross _close"></div>
+    <div class="center" style="margin-top:10px;letter-spacing:1px;"><b>NB</b> click by a point selects its row</div>
+    <div id="column_plot" class="flot_holder"></div>
+</div>
+
+
+<!-- MENU LAYOUT -->
+<div id="menu">
+
+    <div id="menu_main_cmds" class="menu_cmds">
+        <div class="btn btn2 left" id="noclass_trigger">back to search</div>
+        <div class="btn btn3 left" id="closeobj_trigger" style="display:none;">collapse all</div>
+    </div>
+
+    <div id="menu_row_cmds" class="menu_cmds" style="display:none;">
+        <div class="left ctx_caption">The row(s):</div>
+        <div class="btn btn2 left" id="expand_trigger">show</div>
+        <div class="btn left" id="hide_trigger">hide</div>
+        <div class="btn left" id="cancel_rows_trigger">cancel</div>
+    </div>
+
+    <div id="menu_col_cmds" class="menu_cmds" style="display:none;">
+        <div class="left ctx_caption">The column(s):</div>
+        <div class="btn btn2 left" id="plot_trigger">plot interactively</div>
+        <div class="btn btn2 left" id="export_cols_trigger">export</div>
+        <div class="btn left" id="cancel_cols_trigger">cancel</div>
+    </div>
+
+    <div id="readme">Please, select one or more topics.</div>
+</div>
+
+
+<!-- START (TAGS) LAYOUT -->
+<div id="splashscreen_holder">
+    <div id="repo_title_holder">
+        <h1></h1>
+    </div>
+
+    <div id="splashscreen"></div>
+</div>
+
+
+<!-- DATABROWSER LAYOUT -->
+<div id="grid_holder" style="display:none;">
+
+    <div class="data_ctrl" style="display:none;">
+        <div class="left"><select class="default_order_ctrl" style="font-size:1.05em;"><option value="-1" selected="selected">default sort by...</option><option value="0">object name</option><option value="4">timestamp</option><option value="5">first author</option></select></div>
+    </div>
+
+    <table id="databrowser" class="tablesorter"></table>
+
+    <div class="data_ctrl" style="display:none;">
+        <div class="left"><select class="default_order_ctrl" style="font-size:1.05em;"><option value="-1" selected="selected">default sort by...</option><option value="0">object name</option><option value="4">timestamp</option><option value="5">first author</option></select></div>
+    </div>
+
+</div>
+
+
+</body>
+</html>
