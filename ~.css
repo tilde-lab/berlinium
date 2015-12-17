@@ -108,7 +108,7 @@ a.mdtag{height:21px;padding:1px 3px;font-size:1.1em;color:#eee;background:#fff;t
 a.mdtag.visibletag{color:#333;}
 a.mdtag.visibletag:hover{color:#fff;background:#333;}
 a.mdtag.activetag{color:#fff;}
-a.tagmore, a.tagless, a.tagback{display:block;float:right;font-size:2.5em;height:24px;width:40px;line-height:0.25;color:#000;background:#fff;text-decoration:none;padding:2px;margin:2px;text-align:center;}
+a.tagmore, a.tagless, a.tagback{display:block;float:right;font-size:2.8em;height:24px;width:40px;line-height:0.4em;color:#000;background:#fff;text-decoration:none;padding:2px;margin:2px;text-align:center;}
 a.tagback{float:left;}
 
 /* PROFILE DYNPANE */
@@ -117,11 +117,11 @@ a.tagback{float:left;}
 #settings_frame{z-index:101;width:100%;background:url(data:image/gif;base64,R0lGODlhKAAUAJEAAAAAAP///////wAAACH5BAEAAAIALAAAAAAoABQAAAJOlI+JAOoPHQihxYvFpDV7tXHd94XiSF7miaYSy1pussKUPGu2jaf1zul5fsCgr1gUQohIkRLUbD4PzOhpWrVeX1prL9uNUcPhBpgMAxQAADs=) 560px top no-repeat;margin:-20px 0 25px;padding-top:28px;}
 
 #settings_holder{padding-top:1px !important;}
-#settings_holder div.ipane div{width:90%;margin:0 auto;padding-top:30px;line-height:1.4;}
+#settings_holder div.ipane div{width:90%;margin:0 auto;padding-top:30px;line-height:1.4em;}
 
 #settings_holder #settings_cols{padding-top:8px;}
 #settings_holder #settings_cols div.ipane_cols_holder{padding:0;width:100%;clear:both;border-top:1px dashed #666;}
-#settings_holder #settings_cols div.ipane_cols_holder span{display:block;width:100%;text-align:center;font-size:1em;margin:3px 0 4px;font-style:italic;letter-spacing:2px;}
+#settings_holder #settings_cols div.ipane_cols_holder span{display:block;width:100%;text-align:center;font-size:0.85em;margin:3px 0 4px;font-style:italic;letter-spacing:3px;font-weight:bold;}
 #settings_holder #settings_cols div.ipane_cols_holder ul{width:100%;}
 #settings_holder #settings_cols div.ipane_cols_holder ul li{list-style:none;line-height:20px;float:left;width:33%;white-space:nowrap;overflow:hidden;}
 
@@ -165,18 +165,17 @@ div.supercat_content{margin:0;}
 div.cross{margin-right:10px;float:right;width:16px;height:16px;font-size:10px;text-align:center;cursor:pointer;background:url(data:image/gif;base64,R0lGODlhEAAQAJEAAAAAAP///1VVVf///yH5BAEAAAMALAAAAAAQABAAAAIjnI+py6L+BDRy0gqxHVqvLjGcJ3Yl+IEhQpLX+m7wMYv2PRQAOw==) no-repeat;}
 
 /* MENDELEEV */
-div.mendeleevrow_holder{width:120px;margin:0 auto;position:relative;height:30px;cursor:pointer;}
 #mendeleev_table_factory{display:none;}
-div.mendeleev_table_factory_holder{z-index:50;width:100%;margin:0 auto;min-height:250px;clear:both;background:#eee;}
+div.mendeleev_table_factory_holder{z-index:50;width:100%;margin:0 auto;clear:both;background:#ddd;}
 div.mendeleev_table_holder{z-index:51;}
 div.mendeleev_table_holder table{border:0;}
 div.mendeleev_table_holder table tr td div{color:#eee;height:21px;text-align:center;}
 
 /* SLIDERS */
 div.gui_slider_holder{width:100%;}
-div.gui_slider{width:65%;float:left;}
-div.gui_slider_min{width:15%;text-align:center;float:left;}
-div.gui_slider_max{width:20%;text-align:center;float:left;}
+div.gui_slider{width:66%;float:left;}
+div.gui_slider_min{width:14%;text-align:left;float:left;}
+div.gui_slider_max{width:20%;text-align:right;float:left;}
 div.gui_slider_min, div.gui_slider_max{font-size:1.1em;}
 div.gui_slider, div.gui_slider_min, div.gui_slider_max{margin-top:8px;}
 .noUi-target,

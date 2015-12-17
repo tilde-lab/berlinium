@@ -33,6 +33,7 @@ _gui.default_settings.cols = [1, 1002, 1501, 1502, 1503, 7, 17, 9, 10, 12, 22, 2
 _gui.default_settings.colnum = 100;
 _gui.default_settings.objects_expand = true;
 _gui.ws_server = (window.location.host.indexOf('localhost')==-1) ? 'https://db.tilde.pro' : 'http://localhost:8070';
+window.playerdata = {}; // player.html iframe integration
 
 // IE indexOf()
 if (!Array.prototype.indexOf){
@@ -158,10 +159,8 @@ function redraw_vib_links( text2link, target ){
 }
 
 function close_obj_tab(tab_id){
-    //if (delete _gui.rendered[tab_id] && $('#i_'+tab_id).next('tr').hasClass('obj_holder')) $('#i_'+tab_id).next('tr').remove();
-    _gui.rendered = _gui.rendered.filter(function(item){
-        return (item.slice(0, tab_id.length) !== tab_id);
-    });
+    delete _gui.rendered[tab_id];
+    delete window.playerdata[tab_id];
 
     _gui.tab_buffer = $.grep(_gui.tab_buffer, function(val, index){
         if (val.indexOf(tab_id) == -1) return true;
@@ -177,7 +176,7 @@ function e_plotter(req, plot, divclass, ordinate){
         yaxis: {color: '#eeeeee', labelWidth: 50},
         grid: {borderWidth: 1, borderColor: '#000', hoverable: true, clickable: true}
     };
-    if (plot[0].data.length == 1) options.xaxis.ticks = []; // awkward EXCITING optimization
+    if (plot[0].data.length == 1) options.xaxis.ticks = []; // awkward optimization cases
 
     var target = $('#o_'+req.datahash+' div.'+divclass);
 
@@ -185,9 +184,9 @@ function e_plotter(req, plot, divclass, ordinate){
     cpanel.parent().removeClass('loading');
 
     $.plot(target, plot, options);
-    $(target).bind("plotclick", function(event, pos, item){
+    /*$(target).bind("plotclick", function(event, pos, item){
         if (item) document.getElementById('f_'+req.datahash).contentWindow.location.replace( '#' + _gui.settings.dbs[0] + '/' + req.datahash + '/' + item.dataIndex );
-    });
+    });*/
 
     target.append('<div style="position:absolute;z-index:4;width:200px;left:40%;bottom:0;text-align:center;font-size:1.5em;background:#fff;">Step</div>&nbsp;');
     target.append('<div style="position:absolute;z-index:4;width:200px;left:0;top:300px;text-align:center;font-size:1.25em;transform:rotate(-90deg);transform-origin:left top;-webkit-transform:rotate(-90deg);-webkit-transform-origin:left top;-moz-transform:rotate(-90deg);-moz-transform-origin:left top;background:#fff;">'+ordinate+'</div>');
@@ -425,6 +424,7 @@ function url__grid(arg){
     $('#closeobj_trigger').hide();
     _gui.sortdisable = false;
     _gui.rendered = [];
+    window.playerdata = {};
 
     var tags = arg[0].split('+'), start = 0;
 
@@ -446,6 +446,7 @@ function url__entries(arg){
     $('#closeobj_trigger').hide();
     _gui.sortdisable = false;
     _gui.rendered = [];
+    window.playerdata = {};
 
     var hashes = arg[0].split('+');
 
@@ -709,15 +710,15 @@ function resp__tags(req, data){
 
         $('div.gui_slider').each(function(){
             var min = parseFloat($(this).attr('min')), max = parseFloat($(this).attr('max'));
-            $(this).prev().text(min.toFixed(2)).end().next().text(max.toFixed(2)).end()
+            $(this).prev().text(min.toFixed(1)).end().next().text(max.toFixed(1)).end()
             .noUiSlider({  start:[ min, max ], range: {'min':[min],'max':[max]}, animate: false, connect: true  }).on({
                 set: function(){
                     $('#readme').hide();
                     var v = $(this).val();
-                    $(this).prev().text(parseFloat(v[0]).toFixed(2)).end().next().text(parseFloat(v[1]).toFixed(2));
+                    $(this).prev().text(parseFloat(v[0]).toFixed(1)).end().next().text(parseFloat(v[1]).toFixed(1));
                     if (parseFloat(v[0]) !== min || parseFloat(v[1]) !== max) $('#initbox').show();
                 },
-                slide: function(){ var v = $(this).val(); $(this).prev().text(parseFloat(v[0]).toFixed(2)).end().next().text(parseFloat(v[1]).toFixed(2)); }
+                slide: function(){ var v = $(this).val(); $(this).prev().text(parseFloat(v[0]).toFixed(1)).end().next().text(parseFloat(v[1]).toFixed(1)); }
             });
         });
         $('div.tagrow, div.sliderow').show();
@@ -727,9 +728,6 @@ function resp__tags(req, data){
     if (!$.isEmptyObject(data)) $('#splashscreen').show();
 
     add_tag_expanders();
-
-    // junction
-    //if (req.switchto) document.location.hash = '#' + _gui.settings.dbs[0] + '/' + req.switchto;
 }
 
 function resp__summary(req, data){
@@ -747,7 +745,7 @@ function resp__summary(req, data){
     }
 
     // OPTGEOM IPANE
-    if (data.info.optgeom){  $('#o_'+req.datahash+' ul.ipane_ctrl li[rel=optstory]').show() }
+    if (data.info.optgeom === true){  $('#o_'+req.datahash+' ul.ipane_ctrl li[rel=optstory]').show() }
 
     // ESTORY IPANE
     $('#o_'+req.datahash+' ul.ipane_ctrl li[rel=estory]').show();
@@ -756,9 +754,9 @@ function resp__summary(req, data){
     var html = '';
     html += '<div class=preformatter style="height:445px;"><ul class=tags>';
     $.each(data.summary, function(num, value){
-        if ($.inArray(value.content[0], ['&mdash;', '?']) == -1) {
-            html += '<li><strong>' + value.category + '</strong>: <span>' + value.content.join('</span>, <span>') + '</span></li>';
-        }
+        //if ($.inArray(value.content[0], ['&mdash;', '?']) == -1) {
+        html += '<li><strong>' + value.category + '</strong>: <span>' + value.content + '</span></li>';
+        //}
     });
     if (data.info.warns){
         for (var i=0; i<data.info.warns.length; i++){
@@ -778,12 +776,12 @@ function resp__summary(req, data){
     $('span.units-energy').text(_gui.settings.units.energy);
     open_ipane('summary', req.datahash);
 
-    window.playerdata = data.cif;
+    window.playerdata[req.datahash] = data.cif;
 
     // 3D IPANE
     open_ipane('3dview', req.datahash);
     _gui.rendered.push(req.datahash);
-    $('#o_'+req.datahash + ' div.renderer').empty().append('<iframe id=f_'+req.datahash+' frameborder=0 scrolling="no" width="100%" height="500" src="player.html"></iframe>');
+    $('#o_'+req.datahash + ' div.renderer').empty().append('<iframe id=f_'+req.datahash+' frameborder=0 scrolling="no" width="100%" height="500" src="player.html?'+req.datahash+'"></iframe>');
     //$('#phonons_animate').text('animate');
     window.scrollBy(0, 60);
 }
@@ -857,10 +855,6 @@ $(document).ready(function(){
         var id = $(this).parent().parent().parent().attr('id').substr(2);
 
         close_obj_tab(id);
-
-        _gui.rendered = _gui.rendered.filter(function(item){
-            return (item.slice(0, id.length) !== id);
-        });
 
         var anchors = document.location.hash.substr(1).split('/');
         if (anchors.length !== 2) return notify('Unexpected error, please, report this to the developers!');
@@ -961,7 +955,7 @@ $(document).ready(function(){
         add_tag_expanders();
         document.location.hash = '#start';
     });
-    $('#closeobj_trigger').click(function(){
+    /*$('#closeobj_trigger').click(function(){
         $(this).hide();
         var anchors = document.location.hash.substr(1).split('/');
         if (anchors.length != 2) return notify('Unexpected behaviour, please, report this to the developers!');
@@ -971,7 +965,7 @@ $(document).ready(function(){
             close_obj_tab(i);
         });
         document.location.replace( '#' + _gui.settings.dbs[0] + '/grid' );
-    });
+    });*/
 
     // CANCEL CONTEXT MENU
     $('#cancel_rows_trigger').click(function(){
@@ -1067,7 +1061,7 @@ $(document).ready(function(){
 */
     // SPLASHSCREEN TAGCLOUD EXPANDERS
     $('#splashscreen').on('click', 'a.tagmore', function(){
-        $(this).parent().removeClass('tagarea_reduced').prepend('<a class=tagless href=#>&uarr;</a>');
+        $(this).parent().removeClass('tagarea_reduced').prepend('<a class=tagless href=#>&larr;</a>');
         $(this).remove();
         return false;
     });
