@@ -17,15 +17,11 @@
 
 
 <!-- SEARCH INIT BOX -->
-<div id="initbox"><div class="btn btn2 left" id="init_trigger" style="width:130px;">search</div><div class="btn btn3 left" id="cnl_trigger" style="width:100px;">cancel</div></div>
+<div id="initbox"><div class="btn btn2 left" id="init_trigger" style="width:120px;">search</div><div class="btn btn3 left" id="cnl_trigger" style="width:90px;">cancel</div></div>
 
 
 <!-- LOADING BOX -->
 <div id="loadbox">Loading...</div>
-
-
-<!-- RESULTS COUNT -->
-<div id="countbox"></div>
 
 
 <!-- NOTIFIER BOX -->
@@ -35,9 +31,34 @@
 </div>
 
 
-<!-- SETTINGS / USER BOX: ALWAYS VISIBLE! -->
-<div id="pre_user_box">
-    <div id="settings_trigger" class="btn btn2 left">settings</div>
+<!-- MENU LAYOUT -->
+<div id="menu">
+
+    <div id="menu_main_cmds" class="menu_cmds" style="display:none;">
+        <div class="btn btn2 left" id="noclass_trigger">back to search</div>
+        <!-- div class="btn btn3 left" id="closeobj_trigger" style="display:none;">collapse all</div -->
+        <div class="data_ctrl left">
+            <div class="left"><select class="default_order_ctrl"><option value="-1" selected="selected">default sort by...</option><option value="0">chemical formula</option><option value="1">folder layout</option></select></div>
+        </div>
+    </div>
+
+    <div id="menu_row_cmds" class="menu_cmds" style="display:none;">
+        <div class="left ctx_caption">The row(s):</div>
+        <div class="btn btn2 left" id="expand_trigger">show</div>
+        <div class="btn left" id="hide_trigger">hide</div>
+        <div class="btn left" id="cancel_rows_trigger">cancel</div>
+    </div>
+
+    <div id="menu_col_cmds" class="menu_cmds" style="display:none;">
+        <div class="left ctx_caption">The column(s):</div>
+        <div class="btn btn2 left" id="plot_trigger">plot interactively</div>
+        <div class="btn btn2 left" id="export_cols_trigger">export</div>
+        <div class="btn left" id="cancel_cols_trigger">cancel</div>
+    </div>
+
+    <!-- div id="readme">Please, select one or more topics.</div -->
+
+    <div id="settings_trigger" class="btn btn2 right" style="margin-top:6px;">settings</div>
 </div>
 
 
@@ -54,7 +75,7 @@
         </ul>
 
         <div class="ipane" rel="cols">
-            <div style="padding-top:12px;">Columns to display <b>(max. <span id="maxcols"></span>)</b>:</div>
+            <div style="padding-top:12px;">Columns to display<!-- b>(max. <span id="maxcols"></span>)</b -->:</div>
 
             <div id="settings_cols"></div>
 
@@ -68,7 +89,7 @@
             <div class="left" style="clear:none;width:50%;margin-left:25px">Max.number of items in table:</div>
             <div id="ipane_maxitems_holder" class="right" style="clear:none;width:35%;margin-right:25px"></div>
 
-            <div><br /><input type="checkbox" id="settings_objects_expand" /> <label for="settings_objects_expand">click by table opens a window</label></div>
+            <!-- div><br /><input type="checkbox" id="settings_objects_expand" /> <label for="settings_objects_expand">click by table opens a window</label></div -->
 
             <div class="clear"></div>
 
@@ -350,57 +371,22 @@
 </div>
 
 
-<!-- MENU LAYOUT -->
-<div id="menu">
-
-    <div id="menu_main_cmds" class="menu_cmds">
-        <div class="btn btn2 left" id="noclass_trigger">back to search</div>
-        <div class="btn btn3 left" id="closeobj_trigger" style="display:none;">collapse all</div>
-    </div>
-
-    <div id="menu_row_cmds" class="menu_cmds" style="display:none;">
-        <div class="left ctx_caption">The row(s):</div>
-        <div class="btn btn2 left" id="expand_trigger">show</div>
-        <div class="btn left" id="hide_trigger">hide</div>
-        <div class="btn left" id="cancel_rows_trigger">cancel</div>
-    </div>
-
-    <div id="menu_col_cmds" class="menu_cmds" style="display:none;">
-        <div class="left ctx_caption">The column(s):</div>
-        <div class="btn btn2 left" id="plot_trigger">plot interactively</div>
-        <div class="btn btn2 left" id="export_cols_trigger">export</div>
-        <div class="btn left" id="cancel_cols_trigger">cancel</div>
-    </div>
-
-    <div id="readme">Please, select one or more topics.</div>
-</div>
-
-
 <!-- START (TAGS) LAYOUT -->
 <div id="splashscreen_holder">
-    <div id="repo_title_holder">
-        <h1></h1>
-    </div>
-
     <div id="splashscreen"></div>
 </div>
 
 
 <!-- DATABROWSER LAYOUT -->
 <div id="grid_holder" style="display:none;">
-
-    <div class="data_ctrl" style="display:none;">
-        <div class="left"><select class="default_order_ctrl" style="font-size:1.05em;"><option value="-1" selected="selected">default sort by...</option><option value="0">object name</option><option value="4">timestamp</option><option value="5">first author</option></select></div>
-    </div>
-
     <table id="databrowser" class="tablesorter"></table>
-
-    <div class="data_ctrl" style="display:none;">
-        <div class="left"><select class="default_order_ctrl" style="font-size:1.05em;"><option value="-1" selected="selected">default sort by...</option><option value="0">object name</option><option value="4">timestamp</option><option value="5">first author</option></select></div>
-    </div>
-
 </div>
 
+
+<!-- FOOTER LAYOUT -->
+<div id="footer">
+    <span>Powered by Tilde <a href="http://tilde-lab.github.io/berlinium">Berlinium</a> GUI.</span>
+</div>
 
 </body>
 </html>

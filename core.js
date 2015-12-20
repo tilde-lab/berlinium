@@ -5,13 +5,15 @@
 *
 */
 var _gui = {};
-_gui.version = '0.7.1';
+_gui.version = '0.7.5';
+_gui.title = '';
 _gui.debug_regime = false;
 _gui.rendered = [];
-_gui.search_cmd = null;
 _gui.tab_buffer = [];
 _gui.req_stack = [];
-_gui.last_browse_request = false; // todo: request history dispatcher
+_gui.search_hash = null; // todo: request history dispatcher
+_gui.search_req = false; // todo: request history dispatcher
+_gui.conditions = false;
 _gui.socket = null;
 _gui.sortdisable = false;
 _gui.cwidth = 0;
@@ -29,10 +31,10 @@ _gui.units = {
 _gui.unit_capts = {'energy':'Energy', 'phonons':'Phonon frequencies'};
 _gui.default_settings = {};
 _gui.default_settings.units = {'energy':'eV', 'phonons':'cm<sup>-1</sup>'};
-_gui.default_settings.cols = [1, 1002, 1501, 1502, 1503, 7, 17, 9, 10, 12, 22, 27]; // these are cid's of hierarchy API (cid>1000 means specially defined column)
+_gui.default_settings.cols = [1, 1002, 1501, 1502, 1503, 7, 17, 9, 10, 50, 23, 27, 24]; // cid's of hierarchy API
 _gui.default_settings.colnum = 100;
-_gui.default_settings.objects_expand = true;
-_gui.ws_server = (window.location.host.indexOf('localhost')==-1) ? 'https://db.tilde.pro' : 'http://localhost:8070';
+//_gui.default_settings.objects_expand = true;
+_gui.ws_server = (window.location.host.indexOf('localhost') == -1) ? 'https://db.tilde.pro' : 'http://localhost:8070';
 window.playerdata = {}; // player.html iframe integration
 
 // IE indexOf()
@@ -47,7 +49,7 @@ if (!Array.prototype.indexOf){
 if (!console) console = {log: function(){}};
 
 // SockJS
-_gui.conn = function(login_hash){
+_gui.conn = function(){
     _gui.socket = new SockJS(_gui.ws_server, null, ['websocket', 'xhr-polling']);
 
     _gui.socket.onopen = function(){
@@ -56,7 +58,7 @@ _gui.conn = function(login_hash){
         _gui.connattempts = 0;
         clearInterval(_gui.cinterval);
         _gui.cinterval = null;
-        __send('login',  {settings: _gui.settings, login_hash: login_hash} );
+        __send('login',  {settings: _gui.settings} );
     }
 
     _gui.socket.onmessage = function(payload){
@@ -79,17 +81,18 @@ _gui.conn = function(login_hash){
         _gui.connattempts += 1;
         if (_gui.connattempts > _gui.maxconnattempts){
             clearInterval(_gui.cinterval);
-            notify('Connection to program core cannot be established due to the network restrictions. Sometimes <a href=javascript:window.location.reload()>refresh</a> may help.');
+            notify('Connection to server '+_gui.ws_server+' cannot be established due to the network restrictions. Sometimes <a href=javascript:window.location.reload()>refresh</a> may help.');
             return;
         }
-        console.log('CONNECTION WITH PROGRAM CORE HAS FAILED!');
+        console.log('CONNECTION WITH SERVER HAS FAILED!');
         if (_gui.debug_regime){
-            notify('Program core does not respond. Please, try to <a href=javascript:document.location.reload()>restart</a>.');
+            notify('Server '+_gui.ws_server+' does not respond.<br />Please, try to <a href=javascript:document.location.reload()>restart</a>.');
         } else {
             if (!_gui.cinterval) _gui.cinterval = setInterval(function(){ _gui.conn() }, 2000);
         }
     }
 }
+
 function __send(act, req){
     if (_gui.debug_regime) console.log('REQUESTED: '+act); // invalid for login TODO
 
@@ -97,7 +100,7 @@ function __send(act, req){
 
     $('#loadbox').show();
 
-    if (act == 'browse') _gui.last_browse_request = req; // todo: request history dispatcher
+    if (act == 'browse') _gui.search_req = req; // todo: request history dispatcher
 
     try{
         _gui.socket.send( JSON.stringify({'act': act, 'req': req}) );
@@ -140,7 +143,7 @@ function open_ipane(cmd, target){
     _gui.tab_buffer.push(target+'_'+cmd);
 }
 
-function redraw_vib_links( text2link, target ){
+/*function redraw_vib_links( text2link, target ){
     $('#o_'+target+' td.ph_ctrl').each(function(){
         var $this = $(this);
         var linktxt = $this.text();
@@ -156,15 +159,19 @@ function redraw_vib_links( text2link, target ){
             document.getElementById('f_'+target).contentWindow.vibrate_3D( phonons );
         });
     }
-}
+}*/
 
 function close_obj_tab(tab_id){
+    if (_gui.rendered.indexOf(tab_id) == -1) return;
+
     delete _gui.rendered[tab_id];
     delete window.playerdata[tab_id];
 
     _gui.tab_buffer = $.grep(_gui.tab_buffer, function(val, index){
         if (val.indexOf(tab_id) == -1) return true;
     });
+
+    $('#o_' + tab_id).parent().parent().remove();
 }
 
 function e_plotter(req, plot, divclass, ordinate){
@@ -264,7 +271,7 @@ function add_tag_expanders(){
     if (!$('#splashscreen_holder').is(':visible')) return;
     $('a.tagmore, a.tagless').remove();
     $('div.tagarea').each(function(){
-        if ($(this).find('a.visibletag').length > 20){
+        if ($(this).find('a.tag').length > 20){
             $(this).prepend('<a class=tagmore href=#>&rarr;</a>');
             $(this).addClass('tagarea_reduced');
         } else {
@@ -280,11 +287,18 @@ function switch_menus(which){
     else if (which == 2) $('#menu_col_cmds').show();
 }
 
-function reconstruct_tags(){
+function defaultize_tags(){
     $('a.taglink').removeClass('activetag').addClass('visibletag');
     $('a.mdtag').addClass('visibletag');
     //$('div.tagrow').show();
-    $('#initbox').hide();
+    //$('#initbox').hide();
+}
+
+function defaultize_sliders(){
+    $('div.gui_slider').each(function(){
+        var min = parseFloat($(this).attr('min')), max = parseFloat($(this).attr('max'));
+        $(this).noUiSlider({ start: [min, max] }, true);
+    });
 }
 
 function gather_tags(myself){
@@ -305,15 +319,15 @@ function gather_tags(myself){
 }
 
 function gather_continuous(){
-    var condition = [];
+    var conditions = [];
 
     $('div.gui_slider').each(function(){
         var min = parseFloat($(this).attr('min')), max = parseFloat($(this).attr('max'));
         var v = $(this).val();
-        if (parseFloat(v[0]) !== min || parseFloat(v[1]) !== max) condition.push({cid: $(this).parent().parent().parent().attr('rel'), min: v[0], max: v[1]});
+        if (parseFloat(v[0]) !== min || parseFloat(v[1]) !== max) conditions.push({cid: $(this).parent().parent().parent().attr('rel'), min: v[0], max: v[1]});
     });
 
-    return condition;
+    return (conditions.length) ? conditions : false;
 }
 
 function remdublicates(arr){
@@ -334,11 +348,11 @@ function gather_plots_data(){
         $('#databrowser td[rel='+_gui.plots[j]+']').each(function(index){
             var t = $(this).text();
             if (t.indexOf('x') != -1){
-                // special case of k-points
+                // special case
                 var s = t.split('x'), t = 1;
                 for (var i=0; i<s.length; i++){ t *= parseInt(s[i]) }
             } else if (t.indexOf(',') != -1) {
-                // special case of tilting
+                // special case
                 if (t.indexOf('biel') == -1){ // TODO!
                     var s = t.split(',');
                     for (var i=0; i<s.length; i++){ s[i] = parseFloat(s[i]) }
@@ -381,15 +395,13 @@ function align_page(){
 /**
 *
 *
-* ************************************************************************************************************
+* *********************************************************************************************************************
 *
 */
 function url_redraw_react(){
     var anchors = document.location.hash.substr(1).split('/');
 
     if (!anchors.length) return;
-
-    $('#introbox').hide();
 
     _gui.tab_buffer = [];
 
@@ -398,30 +410,31 @@ function url_redraw_react(){
     if (anchors[0].length > 40) document.location.replace('#show/' + anchors[0]); // account previous DOI resolving urls
 
     if (window['url__' + anchors[0]]) window['url__' + anchors[0]](anchors.slice(1));
-    else console.log('Unhandled route: ' + document.location.hash);
+    else notify('Unknown address: ' + document.location.hash);
 }
 
-function url__start(arg){
+function url__start(){
     // MAIN TAGS SCREEN
     $('#grid_holder').hide();
     $('div.downscreen').hide();
-    $('#countbox').hide();
     $('#menu_main_cmds').hide();
     $('div.data_ctrl').hide();
     $('#databrowser').empty();
 
     $('#splashscreen_holder').show();
-    $('#introbox').show();
-    //add_tag_expanders();
+    $('#initbox').show();
+    add_tag_expanders();
     _gui.rendered = [];
+    document.title = _gui.title;
 }
 
-function url__grid(arg){
+function url__browse(arg){
     $('#splashscreen_holder').hide();
     $('#grid_holder').show();
     switch_menus();
 
-    $('#closeobj_trigger').hide();
+    //$('#closeobj_trigger').hide();
+    //$('#readme').hide();
     _gui.sortdisable = false;
     _gui.rendered = [];
     window.playerdata = {};
@@ -429,13 +442,13 @@ function url__grid(arg){
     var tags = arg[0].split('+'), start = 0;
 
     var pgnum = parseInt(arg[1]) || 1;
-    if (pgnum > 1) start = pgnum-1;
+    if (pgnum > 1) start = pgnum - 1;
     var sortby = parseInt($('select.default_order_ctrl').first().val());
-    if (sortby == -1) sortby = 0;
+    if (sortby === -1) sortby = 0;
 
-    __send('browse', {tids: tags, start: start, sortby: sortby});
+    __send('browse', {tids: tags, conditions: _gui.conditions, start: start, sortby: sortby});
 
-    _gui.search_cmd = '#grid/' + arg.join('/');
+    _gui.search_hash = '#browse/' + arg.join('/');
 }
 
 function url__entries(arg){
@@ -443,7 +456,8 @@ function url__entries(arg){
     $('#grid_holder').show();
     switch_menus();
 
-    $('#closeobj_trigger').hide();
+    //$('#closeobj_trigger').hide();
+    //$('#readme').hide();
     _gui.sortdisable = false;
     _gui.rendered = [];
     window.playerdata = {};
@@ -452,7 +466,7 @@ function url__entries(arg){
 
     __send('browse', {hashes: hashes});
 
-    _gui.search_cmd = '#entries/' + arg.join('/');
+    _gui.search_hash = '#entries/' + arg.join('/');
 }
 
 function url__show(arg){
@@ -460,7 +474,8 @@ function url__show(arg){
     $('#grid_holder').show();
     switch_menus();
 
-    $('#closeobj_trigger').hide();
+    //$('#closeobj_trigger').hide();
+    //$('#readme').hide();
     _gui.sortdisable = true;
 
     var hashes = arg[0].split('+');
@@ -470,6 +485,16 @@ function url__show(arg){
         document.location.replace('#show/' + uniq_hashes.join('+'));
         return;
     }
+
+    if (hashes.length > 3){
+        var exceeded_hashes = hashes.splice(0, hashes.length-3);
+        $.each(exceeded_hashes, function(n, i){
+            close_obj_tab(i);
+        });
+        document.location.replace('#show/' + hashes.join('+'));
+        return;
+    }
+
     var absent_hashes = $.grep(hashes, function(el, index){ return !$('#i_' + el).length });
     if (absent_hashes.length) __send('browse', {hashes: hashes});
 
@@ -477,10 +502,35 @@ function url__show(arg){
         if (_gui.rendered.indexOf(item) == -1) __send('summary', {datahash: item});
     });
 }
+
+function url__found(arg){
+    // FIXME: unlike others, no server actions are performed in this search handler by default
+    if (!_gui.conditions){
+        document.location.replace('#start');
+        return;
+    }
+    $('#splashscreen_holder').hide();
+    $('#grid_holder').show();
+    switch_menus();
+
+    _gui.sortdisable = false;
+    _gui.rendered = [];
+    window.playerdata = {};
+
+    if (_gui.search_req){
+        var start = 0;
+        var pgnum = parseInt(arg[1]) || 1;
+        if (pgnum > 1) start = pgnum - 1;
+        var sortby = parseInt($('select.default_order_ctrl').first().val());
+        if (sortby === -1) sortby = 0;
+        _gui.search_req.start = start, _gui.search_req.sortby = sortby;
+        __send('browse', _gui.search_req);
+    }
+}
 /**
 *
 *
-* ************************************************************************************************************
+* *********************************************************************************************************************
 *
 */
 // RESPONSE FUNCTIONS
@@ -488,7 +538,7 @@ function resp__login(req, data){
 
     //if (_gui.last_request){ // something was not completed in a production mode
     //    var action = _gui.last_request.split( _gui.wsock_delim );
-    //    __send(action[0], action[1], true);
+    //    __send(action[0], action[1]);
     //}
     if (data.debug_regime) _gui.debug_regime = true;
 
@@ -498,9 +548,7 @@ function resp__login(req, data){
 
     // general switches (and settings)
     $('#version').text(data.version);
-    document.title = data.title;
-    $('#settings_title').val(data.title);
-    $('#settings_webport').val(data.settings.webport);
+    _gui.title = data.title, document.title = data.title;
 
     for (var attrname in _gui.settings.db){
         if (attrname == 'type') continue;
@@ -508,7 +556,7 @@ function resp__login(req, data){
     }
 
     // display columns settings (depend on server + client state)
-    $('#maxcols').html(_gui.maxcols);
+    //$('#maxcols').html(_gui.maxcols);
 
     _gui.settings.avcols.sort(function(a, b){
         if (a.sort < b.sort) return -1;
@@ -531,13 +579,13 @@ function resp__login(req, data){
     $('#settings_cols').empty().append( result_html );
 
     var colnum_str = '';
-    $.each([50, 100, 500], function(n, item){
+    $.each([50, 100, 250], function(n, item){
         var checked_state = '';
         if (_gui.settings.colnum == item) checked_state = ' checked=checked';
         colnum_str += ' <input type="radio"'+checked_state+' name="s_rdclnm" id="s_rdclnm_'+n+'" value="'+item+'" /><label for="s_rdclnm_'+n+'"> '+item+'</label>';
     });
     $('#ipane_maxitems_holder').empty().append(colnum_str);
-    _gui.settings.objects_expand ? $('#settings_objects_expand').prop('checked', true) : $('#settings_objects_expand').prop('checked', false);
+    //_gui.settings.objects_expand ? $('#settings_objects_expand').prop('checked', true) : $('#settings_objects_expand').prop('checked', false);
 
     // display units settings (depend on client state only)
     var units_str = '';
@@ -566,16 +614,15 @@ function resp__browse(req, data){
     _gui.tab_buffer = [];
     _gui.plots = [];
     _gui.last_chkbox = null;
+
+    if (data.msg) return notify(data.msg);
+
     switch_menus();
     $('#initbox').hide();
 
-    // we send table data in raw html (not json due to performance issues) and therefore some silly workarounds are needed
-    data = data.split('||||');
-    //if (data.length>1) $('#countbox').empty().append(data[1]).show();
-    var total_count = parseInt(data[1]);
     req.start = req.start || 0;
 
-    $('#databrowser').empty().append(data[0]).show();
+    $('#databrowser').empty().append(data.html).show();
 
     $('td._e').each(function(){
         var val = parseFloat( $(this).text() );
@@ -619,30 +666,33 @@ function resp__browse(req, data){
         else switch_menus();
     });
 
-    if (total_count > _gui.settings.colnum){
-        var pcount = Math.ceil(parseInt(total_count) / _gui.settings.colnum);
+    if (data.count > _gui.settings.colnum){
+        var pcount = Math.ceil(data.count / _gui.settings.colnum);
         var plinks = '';
         var anchor_base = document.location.hash.substr(1).split('/').slice(0, 2).join('/');
+        if (anchor_base == 'start') anchor_base = 'found'; // FIXME
         for (var i=1; i<(pcount+1); i++){
             var active_class = '';
             if (i == req.start+1) active_class = ' pglink_active';
-            plinks += '<a class="pglink' + active_class + '" href="#' + anchor_base + '/' + i + '">page ' + i + '</a>';
+            if (i > Math.round(_gui.cwidth/95)) break; // FIXME
+            plinks += '<a class="pglink' + active_class + '" href="#' + anchor_base + '/' + i + '">p' + i + '</a>';
         }
         $('a.pglink').remove();
         $('div.data_ctrl').append(plinks).show();
     } else $('div.data_ctrl').hide();
 
-    var count_msg = 'Matched items: ' + total_count;
-    var high_bound = ((req.start+1) * _gui.settings.colnum > total_count) ? total_count : (req.start+1) * _gui.settings.colnum;
-    if (total_count > _gui.settings.colnum) count_msg += ' (' + (req.start * _gui.settings.colnum + 1) + ' to ' + high_bound + ' shown)';
-    $('#countbox').empty().append(count_msg).show();
+    var count_msg = 'Found: ' + data.count;
+    var high_bound = ((req.start+1) * _gui.settings.colnum > data.count) ? data.count : (req.start+1) * _gui.settings.colnum;
+    if (data.count > _gui.settings.colnum) count_msg += ' (' + (req.start * _gui.settings.colnum + 1) + '-' + high_bound + ' shown)';
+    document.title = count_msg;
+
+    if (req.conditions && document.location.hash.indexOf('found') == -1) document.location.hash = '#found/condition'; // FIXME
 }
 
 function resp__tags(req, data){
     if (req.tids && req.tids.length){
         // UPDATE AVAILABLE TAGS
-        $('#countbox').hide();
-        $('#initbox').show();
+        //$('#initbox').show();
         $('a.taglink').removeClass('visibletag'); // reset shown tags
 
         $.each(data, function(n, i){
@@ -692,7 +742,7 @@ function resp__tags(req, data){
             tags_html += '<div id="supercat_'+i.id+'" class="supercat"> <div class="supercat_title">'+i.category.charAt(0).toUpperCase() + i.category.slice(1)+'</div> <div class="supercat_content">' + i.html_pocket + '</div> </div>';
         });
 
-        if (!tags_html.length) tags_html = '<div class=center style="color:#fff;font-weight:bold;">DB is empty!</div>';
+        if (!tags_html.length) tags_html = '<div class=center>DB is empty!</div>';
         $('#splashscreen').empty().append(tags_html);
 
         var mendeleev_cid = 2;
@@ -713,10 +763,10 @@ function resp__tags(req, data){
             $(this).prev().text(min.toFixed(1)).end().next().text(max.toFixed(1)).end()
             .noUiSlider({  start:[ min, max ], range: {'min':[min],'max':[max]}, animate: false, connect: true  }).on({
                 set: function(){
-                    $('#readme').hide();
+                    //$('#readme').hide();
                     var v = $(this).val();
                     $(this).prev().text(parseFloat(v[0]).toFixed(1)).end().next().text(parseFloat(v[1]).toFixed(1));
-                    if (parseFloat(v[0]) !== min || parseFloat(v[1]) !== max) $('#initbox').show();
+                    //if (parseFloat(v[0]) !== min || parseFloat(v[1]) !== max) $('#initbox').show();
                 },
                 slide: function(){ var v = $(this).val(); $(this).prev().text(parseFloat(v[0]).toFixed(1)).end().next().text(parseFloat(v[1]).toFixed(1)); }
             });
@@ -741,7 +791,7 @@ function resp__summary(req, data){
     if (data.info.input){
         $('#o_'+req.datahash+' ul.ipane_ctrl li[rel=inp]').show();
         data.info.input = data.info.input.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-        $('#o_'+req.datahash + ' div[rel=inp]').append('<div class=preformatter style="font-face:Courier New;white-space:pre;height:489px;width:'+(_gui.cwidth/2-65)+'px;margin:20px auto auto 20px;">'+data.info.input+'</div>');
+        $('#o_'+req.datahash + ' div[rel=inp]').append('<div class=preformatter style="width:'+(_gui.cwidth/2-60)+'px;">'+data.info.input+'</div>');
     }
 
     // OPTGEOM IPANE
@@ -752,7 +802,7 @@ function resp__summary(req, data){
 
     // SUMMARY (MAIN) IPANE
     var html = '';
-    html += '<div class=preformatter style="height:445px;"><ul class=tags>';
+    html += '<div class=preformatter><ul class=tags>';
     $.each(data.summary, function(num, value){
         //if ($.inArray(value.content[0], ['&mdash;', '?']) == -1) {
         html += '<li><strong>' + value.category + '</strong>: <span>' + value.content + '</span></li>';
@@ -783,7 +833,7 @@ function resp__summary(req, data){
     _gui.rendered.push(req.datahash);
     $('#o_'+req.datahash + ' div.renderer').empty().append('<iframe id=f_'+req.datahash+' frameborder=0 scrolling="no" width="100%" height="500" src="player.html?'+req.datahash+'"></iframe>');
     //$('#phonons_animate').text('animate');
-    window.scrollBy(0, 60);
+    //window.scrollBy(0, 60);
 }
 
 function resp__settings(req, data){
@@ -792,9 +842,9 @@ function resp__settings(req, data){
     if (req.area == 'cols'){
         // re-draw data table without modifying tags
         if (!$('#grid_holder').is(':visible')) return;
-        if (_gui.search_cmd){
-            var search_base = _gui.search_cmd.substr(1).split('/').slice(0, 2).join('/');
-            if (_gui.search_cmd.substr(_gui.search_cmd.length-2) == '/0') document.location.hash = '#' + search_base;
+        if (_gui.search_hash){
+            var search_base = _gui.search_hash.substr(1).split('/').slice(0, 2).join('/');
+            if (_gui.search_hash.substr(_gui.search_hash.length-2) == '/0') document.location.hash = '#' + search_base;
             else document.location.hash = '#' + search_base + '/0';
         } else document.location.reload();
     }
@@ -813,7 +863,7 @@ function resp__estory(req, data){
 /**
 *
 *
-* ************************************************************************************************************
+* *********************************************************************************************************************
 *
 */
 $(document).ready(function(){
@@ -827,8 +877,8 @@ $(document).ready(function(){
 
     // initialize client-side settings
     _gui.settings = $.jStorage.get('tilde', _gui.default_settings);
-    _gui.maxcols = Math.round(_gui.cwidth/160) || 2;
-    if (_gui.settings.cols.length > _gui.maxcols) _gui.settings.cols.splice(_gui.maxcols-1, _gui.settings.cols.length-_gui.maxcols+1);
+    //_gui.maxcols = Math.round(_gui.cwidth/160) || 2;
+    //if (_gui.settings.cols.length > _gui.maxcols) _gui.settings.cols.splice(_gui.maxcols-1, _gui.settings.cols.length-_gui.maxcols+1);
 
     window.onhashchange = url_redraw_react;
 
@@ -837,7 +887,7 @@ $(document).ready(function(){
 /**
 *
 *
-* ************************************************************************************************************
+* *********************************************************************************************************************
 *
 */
     // CLOSE OR REMOVE CONTEXT WINDOW
@@ -863,13 +913,13 @@ $(document).ready(function(){
             return (item.slice(0, id.length) !== id);
         });
 
-        if (!hashes.length) document.location.hash = _gui.search_cmd ? _gui.search_cmd : '#entries/' + id;
+        if (!hashes.length) document.location.hash = _gui.search_hash ? _gui.search_hash : '#entries/' + id; // FIXME!
         else document.location.hash = '#show/' + hashes.join('+');
     });
 /**
 *
 *
-* ************************************************************************************************************
+* *********************************************************************************************************************
 *
 */
     // DATABROWSER TABLE
@@ -913,6 +963,17 @@ $(document).ready(function(){
         }
     });
 
+    // DEFAULT SOFTING
+    $('select.default_order_ctrl').change(function(){
+        var val = parseInt($(this).val());
+        if (val == -1) return;
+        $('select.default_order_ctrl').val(val);
+
+        var search_base = _gui.search_hash.substr(1).split('/').slice(0, 2).join('/');
+        if (_gui.search_hash.substr(_gui.search_hash.length-2) == '/0') document.location.hash = '#' + search_base;
+        else document.location.hash = '#' + search_base + '/0';
+    });
+
     // IPANE COMMANDS
     $(document.body).on('click', 'ul.ipane_ctrl li', function(){
         var cmd = $(this).attr('rel');
@@ -923,7 +984,7 @@ $(document).ready(function(){
 /**
 *
 *
-* ************************************************************************************************************
+* *********************************************************************************************************************
 *
 */
     $('#expand_trigger').click(function(){
@@ -948,11 +1009,10 @@ $(document).ready(function(){
 
     // DATABROWSER MENU
     $('#noclass_trigger').click(function(){
-        $('#menu_main_cmds').hide();
         _gui.req_stack = [];
-        $('#loadbox').hide();
-        reconstruct_tags();
-        add_tag_expanders();
+        //$('#loadbox').hide();
+        defaultize_tags();
+        defaultize_sliders();
         document.location.hash = '#start';
     });
     /*$('#closeobj_trigger').click(function(){
@@ -964,8 +1024,30 @@ $(document).ready(function(){
         $.each(hashes, function(n, i){
             close_obj_tab(i);
         });
-        document.location.replace( '#' + _gui.settings.dbs[0] + '/grid' );
+        document.location.replace( '#' + _gui.settings.dbs[0] + '/browse' );
     });*/
+
+    // SPLASHSCREEN INIT TAG QUERY
+    $('#init_trigger').click(function(){
+        var tags = gather_tags();
+        _gui.conditions = gather_continuous();
+
+        if (tags.length && _gui.conditions){
+            __send('browse', {tids: tags, conditions: _gui.conditions});
+        } else if (tags.length){
+            document.location.hash = '#browse/' + tags.join('+');
+        } else if (_gui.conditions){
+            __send('browse', {conditions: _gui.conditions});
+        } else notify('Please, choose the topic(s)');
+    });
+
+    // SPLASHSCREEN CANCEL TAG QUERY
+    $('#cnl_trigger').click(function(){
+        _gui.conditions = false;
+        defaultize_tags();
+        defaultize_sliders();
+        add_tag_expanders();
+    });
 
     // CANCEL CONTEXT MENU
     $('#cancel_rows_trigger').click(function(){
@@ -1041,9 +1123,9 @@ $(document).ready(function(){
     // HIDE ITEM
     $('#hide_trigger').click(function(){
         $('div._closable').hide();
-        if (_gui.rendered.length){
+        /*if (_gui.rendered.length){
             $('#closeobj_trigger').trigger('click');
-        }
+        }*/
 
         $('input.SHFT_cb').each(function(){
             if ($(this).is(':checked')) $(this).parent().parent().remove();
@@ -1056,7 +1138,7 @@ $(document).ready(function(){
 /**
 *
 *
-* ************************************************************************************************************
+* *********************************************************************************************************************
 *
 */
     // SPLASHSCREEN TAGCLOUD EXPANDERS
@@ -1077,40 +1159,20 @@ $(document).ready(function(){
     // SPLASHSCREEN TAG COMMANDS SINGLE CLICK
     $('#splashscreen').on('click', 'a.taglink', function(){
         if (!$(this).hasClass('visibletag')) return false;
-        $('#readme').hide();
+        //$('#readme').hide();
         var tags = gather_tags($(this));
         if (tags.length){
             __send('tags', {tids: tags});
         } else {
-            reconstruct_tags();
+            defaultize_tags();
             add_tag_expanders();
         }
         return false;
     });
-
-    // SPLASHSCREEN INIT TAG QUERY
-    $('#init_trigger').click(function(){
-        var tags = gather_tags();
-        var condition = gather_continuous();
-        //__send('browse', {tids: tags, condition: condition});
-        if (tags.length){
-            document.location.hash = '#grid/' + tags.join('+');
-        } else notify('Please, choose the topic(s)');
-    });
-
-    // SPLASHSCREEN CANCEL TAG QUERY
-    $('#cnl_trigger').click(function(){
-        reconstruct_tags();
-        add_tag_expanders();
-        $('div.gui_slider').each(function(){
-            var min = parseFloat($(this).attr('min')), max = parseFloat($(this).attr('max'));
-            $(this).noUiSlider({ start: [min, max] }, true);
-        });
-    });
 /**
 *
 *
-* ************************************************************************************************************
+* *********************************************************************************************************************
 *
 */
     // SETTINGS: GENERAL TRIGGERS
@@ -1124,13 +1186,13 @@ $(document).ready(function(){
     });
 
     // SETTINGS: MAXCOLS
-    $('#settings_cols').on('click', 'input', function(){
+    /*$('#settings_cols').on('click', 'input', function(){
         if ($('#settings_cols input:checked').length > _gui.maxcols){
             $('#maxcols').parent().css('background-color', '#f99');
             return false;
         }
         $('#maxcols').parent().css('background-color', '#fff');
-    });
+    });*/
 
     // SETTINGS: EXPLICIT CLICK TO SAVE
     $('div.settings_apply').click(function(){
@@ -1157,8 +1219,7 @@ $(document).ready(function(){
                 }
             });
 
-            // SETTINGS: EXPAND OBJECTS
-            _gui.settings.objects_expand = $('#settings_objects_expand').is(':checked');
+            //_gui.settings.objects_expand = $('#settings_objects_expand').is(':checked');
 
             __send('settings', {area: 'cols', settings: _gui.settings} );
 
@@ -1167,9 +1228,8 @@ $(document).ready(function(){
             $('#profile_holder').hide();
 
             // re-draw data table without modifying tags
-            if (!_gui.last_browse_request) return;
             if (!$('#databrowser').is(':visible')) return;
-            __send('browse', _gui.last_browse_request, true);
+            if (_gui.search_req) __send('browse', _gui.search_req);
         }
     });
 
@@ -1195,7 +1255,7 @@ $(document).ready(function(){
 /**
 *
 *
-* ************************************************************************************************************
+* *********************************************************************************************************************
 *
 */
     // RESIZE
@@ -1203,8 +1263,8 @@ $(document).ready(function(){
         if (Math.abs(_gui.cwidth - document.body.clientWidth) < 30) return; // width of scrollbar
         _gui.cwidth = document.body.clientWidth;
         add_tag_expanders();
-        _gui.maxcols = Math.round(_gui.cwidth/160) || 2;
-        $('#maxcols').html(_gui.maxcols);
+        //_gui.maxcols = Math.round(_gui.cwidth/160) || 2;
+        //$('#maxcols').html(_gui.maxcols);
         align_page();
         console.log('NEW WIDTH: ' + _gui.cwidth + ' PX');
     });
