@@ -1251,6 +1251,7 @@ $(document).ready(function(){
         });
         _gui.settings.units = sets;
         $.jStorage.set('tilde', _gui.settings);
+        $('span.units-energy').text(_gui.settings.units.energy);
     });
 /**
 *
