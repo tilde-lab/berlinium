@@ -17,9 +17,8 @@ _gui.conditions = false;
 _gui.socket = null;
 _gui.sortdisable = false;
 _gui.cwidth = 0;
-_gui.cinterval = null;
 _gui.connattempts = 0;
-_gui.maxconnattempts = 5;
+_gui.max_connattempt = 2;
 _gui.plots = [];
 _gui.mendeleev = {};
 _gui.mendeleev_table = ['X', 'H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr'];
@@ -34,10 +33,11 @@ _gui.default_settings.units = {'energy':'eV', 'phonons':'cm<sup>-1</sup>'};
 _gui.default_settings.cols = [1, 1002, 1501, 1502, 1503, 7, 17, 9, 10, 50, 23, 27, 24]; // cid's of hierarchy API
 _gui.default_settings.colnum = 100;
 //_gui.default_settings.objects_expand = true;
-_gui.ws_server = (window.location.host.indexOf('localhost') == -1) ? 'https://db.tilde.pro' : 'http://localhost:8070';
+_gui.permaurl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+_gui.ws_server = null;
 window.playerdata = {}; // player.html iframe integration
 
-// IE indexOf()
+// Polyfills
 if (!Array.prototype.indexOf){
     Array.prototype.indexOf = function(obj, start){
     for (var i = (start || 0), j = this.length; i < j; i++){
@@ -46,7 +46,12 @@ if (!Array.prototype.indexOf){
     return -1;
     }
 }
+
 if (!console) console = {log: function(){}};
+
+String.prototype.startswith = function(prefix){
+    return this.indexOf(prefix) === 0;
+}
 
 // SockJS
 _gui.conn = function(){
@@ -55,9 +60,9 @@ _gui.conn = function(){
     _gui.socket.onopen = function(){
         console.log('CONNECTED.');
         $('#notifybox').hide();
+        $('#abortbox').hide();
         _gui.connattempts = 0;
-        clearInterval(_gui.cinterval);
-        _gui.cinterval = null;
+        _gui.settings = $.jStorage.get(_gui.ws_server, _gui.default_settings); // initialize client-side settings
         __send('login',  {settings: _gui.settings} );
     }
 
@@ -79,17 +84,14 @@ _gui.conn = function(){
 
     _gui.socket.onclose = function(){
         _gui.connattempts += 1;
-        if (_gui.connattempts > _gui.maxconnattempts){
-            clearInterval(_gui.cinterval);
-            notify('Connection to server '+_gui.ws_server+' cannot be established due to the network restrictions. Sometimes <a href=javascript:window.location.reload()>refresh</a> may help.');
-            return;
+        if (_gui.connattempts > _gui.max_connattempt){
+            $('#loadbox').hide();
+            $('#abortbox').hide();
+            $('#connectws_holder').show();
+            return notify('Connection to server '+_gui.ws_server+' cannot be established.');
         }
         console.log('CONNECTION WITH SERVER HAS FAILED!');
-        if (_gui.debug_regime){
-            notify('Server '+_gui.ws_server+' does not respond.<br />Please, try to <a href=javascript:document.location.reload()>restart</a>.');
-        } else {
-            if (!_gui.cinterval) _gui.cinterval = setInterval(function(){ _gui.conn() }, 2000);
-        }
+        setTimeout(function(){ _gui.conn() }, 0);
     }
 }
 
@@ -399,7 +401,7 @@ function align_page(){
 *
 */
 function url_redraw_react(){
-    var anchors = document.location.hash.substr(1).split('/');
+    var anchors = window.location.hash.substr(1).split('/');
 
     if (!anchors.length) return;
 
@@ -407,10 +409,10 @@ function url_redraw_react(){
 
     clean_plots();
 
-    if (anchors[0].length > 40) document.location.replace('#show/' + anchors[0]); // account previous DOI resolving urls
+    if (anchors[0].length > 40) window.location.replace('#show/' + anchors[0]); // account previous DOI resolving urls
 
     if (window['url__' + anchors[0]]) window['url__' + anchors[0]](anchors.slice(1));
-    else notify('Unknown address: ' + document.location.hash);
+    else notify('Unknown address: ' + window.location.hash);
 }
 
 function url__start(){
@@ -482,7 +484,7 @@ function url__show(arg){
 
     var uniq_hashes = hashes.filter(function(item, pos){ return hashes.indexOf(item) == pos });
     if (hashes.length !== uniq_hashes.length){
-        document.location.replace('#show/' + uniq_hashes.join('+'));
+        window.location.replace('#show/' + uniq_hashes.join('+'));
         return;
     }
 
@@ -491,7 +493,7 @@ function url__show(arg){
         $.each(exceeded_hashes, function(n, i){
             close_obj_tab(i);
         });
-        document.location.replace('#show/' + hashes.join('+'));
+        window.location.replace('#show/' + hashes.join('+'));
         return;
     }
 
@@ -506,7 +508,7 @@ function url__show(arg){
 function url__found(arg){
     // FIXME: unlike others, no server actions are performed in this search handler by default
     if (!_gui.conditions){
-        document.location.replace('#start');
+        window.location.replace('#start');
         return;
     }
     $('#splashscreen_holder').hide();
@@ -544,20 +546,13 @@ function resp__login(req, data){
 
     if (_gui.debug_regime) console.log("RECEIVED SETTINGS: " + JSON.stringify(data.settings));
     for (var attrname in data.settings){ _gui.settings[attrname] = data.settings[attrname] }
+    $.jStorage.set(_gui.ws_server, _gui.settings);
     //if (_gui.debug_regime) console.log("FINAL SETTINGS: " + JSON.stringify(_gui.settings));
 
     // general switches (and settings)
-    $('#version').text(data.version);
     _gui.title = data.title, document.title = data.title;
 
-    for (var attrname in _gui.settings.db){
-        if (attrname == 'type') continue;
-        $('#settings_postgres_'+attrname).val(_gui.settings.db[attrname]);
-    }
-
     // display columns settings (depend on server + client state)
-    //$('#maxcols').html(_gui.maxcols);
-
     _gui.settings.avcols.sort(function(a, b){
         if (a.sort < b.sort) return -1;
         else if (a.sort > b.sort) return 1;
@@ -577,6 +572,7 @@ function resp__login(req, data){
         if (i.settings_group && i.html_pocket.length) result_html += '<div class="ipane_cols_holder"><span>' + i.category.charAt(0).toUpperCase() + i.category.slice(1) + '</span><ul>' + i.html_pocket + '</ul></div>';
     });
     $('#settings_cols').empty().append( result_html );
+    $('#settings_trigger').show();
 
     var colnum_str = '';
     $.each([50, 100, 250], function(n, item){
@@ -601,11 +597,9 @@ function resp__login(req, data){
     });
     $('#ipane_units_holder').empty().append( units_str );
 
-    if ($('#splashscreen').is(':empty')){
-        __send('tags', {tids: false});
-    }
+    if ($('#splashscreen').is(':empty')) __send('tags', {tids: false});
 
-    document.location.hash ? url_redraw_react() : document.location.replace('#start');
+    window.location.hash ? url_redraw_react() : window.location.replace('#start');
 }
 
 function resp__browse(req, data){
@@ -637,39 +631,10 @@ function resp__browse(req, data){
 
     if ($('#databrowser td').length > 1) $('#databrowser').tablesorter({sortMultiSortKey:'ctrlKey'});
 
-    // GRAPH CHECKBOXES
-    // (UNFORTUNATELY HERE : TODO)
-    $('input.sc').click(function(ev){
-        ev.stopImmediatePropagation();
-        var cat = $(this).parent().attr('rel');
-        $('.selected').removeClass('selected');
-
-        $('input.SHFT_cb').prop('checked', false);
-
-        if ($(this).is(':checked')){
-            _gui.plots.push(cat);
-            if (_gui.plots.length > 2){
-                var old = _gui.plots.shift();
-                $('#databrowser th[rel='+old+']').children('input').prop('checked', false);
-            }
-        } else {
-            $(this).parent().removeClass('selected');
-            var iold = _gui.plots.indexOf(cat);
-            _gui.plots.splice(iold, 1);
-        }
-
-        $.each(_gui.plots, function(n, i){
-            $('#databrowser td[rel='+i+'], #databrowser th[rel='+i+']').addClass('selected');
-        });
-
-        if (_gui.plots.length) switch_menus(2);
-        else switch_menus();
-    });
-
     if (data.count > _gui.settings.colnum){
         var pcount = Math.ceil(data.count / _gui.settings.colnum);
         var plinks = '';
-        var anchor_base = document.location.hash.substr(1).split('/').slice(0, 2).join('/');
+        var anchor_base = window.location.hash.substr(1).split('/').slice(0, 2).join('/');
         if (anchor_base == 'start') anchor_base = 'found'; // FIXME
         for (var i=1; i<(pcount+1); i++){
             var active_class = '';
@@ -686,7 +651,7 @@ function resp__browse(req, data){
     if (data.count > _gui.settings.colnum) count_msg += ' (' + (req.start * _gui.settings.colnum + 1) + '-' + high_bound + ' shown)';
     document.title = count_msg;
 
-    if (req.conditions && document.location.hash.indexOf('found') == -1) document.location.hash = '#found/condition'; // FIXME
+    if (req.conditions && window.location.hash.indexOf('found') == -1) window.location.hash = '#found/condition'; // FIXME
 }
 
 function resp__tags(req, data){
@@ -837,16 +802,16 @@ function resp__summary(req, data){
 }
 
 function resp__settings(req, data){
-    $.jStorage.set('tilde', _gui.settings);
+    $.jStorage.set(_gui.ws_server, _gui.settings);
 
     if (req.area == 'cols'){
         // re-draw data table without modifying tags
         if (!$('#grid_holder').is(':visible')) return;
         if (_gui.search_hash){
             var search_base = _gui.search_hash.substr(1).split('/').slice(0, 2).join('/');
-            if (_gui.search_hash.substr(_gui.search_hash.length-2) == '/0') document.location.hash = '#' + search_base;
-            else document.location.hash = '#' + search_base + '/0';
-        } else document.location.reload();
+            if (_gui.search_hash.substr(_gui.search_hash.length-2) == '/0') window.location.hash = '#' + search_base;
+            else window.location.hash = '#' + search_base + '/0';
+        } else window.location.reload();
     }
     console.log('SETTINGS SAVED!');
 }
@@ -867,7 +832,6 @@ function resp__estory(req, data){
 *
 */
 $(document).ready(function(){
-
     if (!window.JSON) return;
 
     _gui.cwidth = document.body.clientWidth;
@@ -875,15 +839,29 @@ $(document).ready(function(){
 
     $('#notifybox').hide();
 
-    // initialize client-side settings
-    _gui.settings = $.jStorage.get('tilde', _gui.default_settings);
-    //_gui.maxcols = Math.round(_gui.cwidth/160) || 2;
-    //if (_gui.settings.cols.length > _gui.maxcols) _gui.settings.cols.splice(_gui.maxcols-1, _gui.settings.cols.length-_gui.maxcols+1);
-
     window.onhashchange = url_redraw_react;
 
-    _gui.conn();
+    var last_servers_html = '';
+    $.each($.jStorage.index(), function(n, i){
+        last_servers_html += '<a class=connectws_last href=?'+i+'>'+i+'</a>';
+    });
+    if (last_servers_html.length) $('#connectws_last_list').append(last_servers_html).show();
 
+    if (window.location.search){
+        $('#loadbox').show();
+        $('#abortbox').show();
+        $('#connectws_holder').hide();
+
+        var url = window.location.search.substr(1);
+        if ((!url.startswith('http://') && !url.startswith('https://')) || url.length < 10){
+            $('#loadbox').hide();
+            $('#abortbox').hide();
+            $('#connectws_holder').show();
+            notify("Invalid address!");
+        }
+        _gui.ws_server = url;
+        _gui.conn();
+    } else $('#connectws_addr').focus();
 /**
 *
 *
@@ -906,15 +884,15 @@ $(document).ready(function(){
 
         close_obj_tab(id);
 
-        var anchors = document.location.hash.substr(1).split('/');
+        var anchors = window.location.hash.substr(1).split('/');
         if (anchors.length !== 2) return notify('Unexpected error, please, report this to the developers!');
 
         var hashes = anchors[1].split('+').filter(function(item){
             return (item.slice(0, id.length) !== id);
         });
 
-        if (!hashes.length) document.location.hash = _gui.search_hash ? _gui.search_hash : '#entries/' + id; // FIXME!
-        else document.location.hash = '#show/' + hashes.join('+');
+        if (!hashes.length) window.location.hash = _gui.search_hash ? _gui.search_hash : '#entries/' + id; // FIXME!
+        else window.location.hash = '#show/' + hashes.join('+');
     });
 /**
 *
@@ -963,6 +941,35 @@ $(document).ready(function(){
         }
     });
 
+    // GRAPH CHECKBOXES
+    // (UNFORTUNATELY HERE : TODO)
+    $('#databrowser').on('click', 'input.sc', function(ev){
+        ev.stopImmediatePropagation();
+        var cat = $(this).parent().attr('rel');
+        $('.selected').removeClass('selected');
+
+        $('input.SHFT_cb').prop('checked', false);
+
+        if ($(this).is(':checked')){
+            _gui.plots.push(cat);
+            if (_gui.plots.length > 2){
+                var old = _gui.plots.shift();
+                $('#databrowser th[rel='+old+']').children('input').prop('checked', false);
+            }
+        } else {
+            $(this).parent().removeClass('selected');
+            var iold = _gui.plots.indexOf(cat);
+            _gui.plots.splice(iold, 1);
+        }
+
+        $.each(_gui.plots, function(n, i){
+            $('#databrowser td[rel='+i+'], #databrowser th[rel='+i+']').addClass('selected');
+        });
+
+        if (_gui.plots.length) switch_menus(2);
+        else switch_menus();
+    });
+
     // DEFAULT SOFTING
     $('select.default_order_ctrl').change(function(){
         var val = parseInt($(this).val());
@@ -970,8 +977,8 @@ $(document).ready(function(){
         $('select.default_order_ctrl').val(val);
 
         var search_base = _gui.search_hash.substr(1).split('/').slice(0, 2).join('/');
-        if (_gui.search_hash.substr(_gui.search_hash.length-2) == '/0') document.location.hash = '#' + search_base;
-        else document.location.hash = '#' + search_base + '/0';
+        if (_gui.search_hash.substr(_gui.search_hash.length-2) == '/0') window.location.hash = '#' + search_base;
+        else window.location.hash = '#' + search_base + '/0';
     });
 
     // IPANE COMMANDS
@@ -998,33 +1005,32 @@ $(document).ready(function(){
 
         if (_gui.rendered.indexOf(id) > -1) return;
 
-        var anchors = document.location.hash.substr(1).split('/');
+        var anchors = window.location.hash.substr(1).split('/');
         if (anchors[0] == 'show' && anchors[1]){
-            if (anchors[1].indexOf(id) == -1) document.location.hash += '+' + id;
+            if (anchors[1].indexOf(id) == -1) window.location.hash += '+' + id;
             else return;
         } else {
-            document.location.hash = '#show/' + id;
+            window.location.hash = '#show/' + id;
         }
     });
 
     // DATABROWSER MENU
     $('#noclass_trigger').click(function(){
         _gui.req_stack = [];
-        //$('#loadbox').hide();
         defaultize_tags();
         defaultize_sliders();
-        document.location.hash = '#start';
+        window.location.hash = '#start';
     });
     /*$('#closeobj_trigger').click(function(){
         $(this).hide();
-        var anchors = document.location.hash.substr(1).split('/');
+        var anchors = window.location.hash.substr(1).split('/');
         if (anchors.length != 2) return notify('Unexpected behaviour, please, report this to the developers!');
 
         var hashes = anchors[1].split('+');
         $.each(hashes, function(n, i){
             close_obj_tab(i);
         });
-        document.location.replace( '#' + _gui.settings.dbs[0] + '/browse' );
+        window.location.replace( '#' + _gui.settings.dbs[0] + '/browse' );
     });*/
 
     // SPLASHSCREEN INIT TAG QUERY
@@ -1035,7 +1041,7 @@ $(document).ready(function(){
         if (tags.length && _gui.conditions){
             __send('browse', {tids: tags, conditions: _gui.conditions});
         } else if (tags.length){
-            document.location.hash = '#browse/' + tags.join('+');
+            window.location.hash = '#browse/' + tags.join('+');
         } else if (_gui.conditions){
             __send('browse', {conditions: _gui.conditions});
         } else notify('Please, choose the topic(s)');
@@ -1185,15 +1191,6 @@ $(document).ready(function(){
         }
     });
 
-    // SETTINGS: MAXCOLS
-    /*$('#settings_cols').on('click', 'input', function(){
-        if ($('#settings_cols input:checked').length > _gui.maxcols){
-            $('#maxcols').parent().css('background-color', '#f99');
-            return false;
-        }
-        $('#maxcols').parent().css('background-color', '#fff');
-    });*/
-
     // SETTINGS: EXPLICIT CLICK TO SAVE
     $('div.settings_apply').click(function(){
         if ($('#settings_cols').is(':visible')){
@@ -1250,8 +1247,20 @@ $(document).ready(function(){
             }
         });
         _gui.settings.units = sets;
-        $.jStorage.set('tilde', _gui.settings);
+        $.jStorage.set(_gui.ws_server, _gui.settings);
         $('span.units-energy').text(_gui.settings.units.energy);
+    });
+
+    $('#connectws_trigger').click(function(){
+        var url = $('#connectws_addr').val();
+        if (!url) return notify("Invalid address!");
+        if (!url.startswith('http://') && !url.startswith('https://')) url = 'http://' + url;
+        window.location = _gui.permaurl + '?' + url;
+        _gui.ws_server = url;
+        _gui.conn();
+    });
+    $('#connectws_disconnect, #abort_trigger').click(function(){
+        window.location = _gui.permaurl;
     });
 /**
 *
@@ -1264,8 +1273,6 @@ $(document).ready(function(){
         if (Math.abs(_gui.cwidth - document.body.clientWidth) < 30) return; // width of scrollbar
         _gui.cwidth = document.body.clientWidth;
         add_tag_expanders();
-        //_gui.maxcols = Math.round(_gui.cwidth/160) || 2;
-        //$('#maxcols').html(_gui.maxcols);
         align_page();
         console.log('NEW WIDTH: ' + _gui.cwidth + ' PX');
     });

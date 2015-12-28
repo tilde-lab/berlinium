@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title></title>
+<title>Start@Berlinium</title>
 <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
 <link type="text/css" href="~.css" rel="stylesheet" media="screen" />
@@ -21,13 +21,26 @@
 
 
 <!-- LOADING BOX -->
-<div id="loadbox">Loading...</div>
+<div id="loadbox"><div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div></div>
+<div id="abortbox">Connecting... <span id="abort_trigger">Abort</span></div>
 
 
 <!-- NOTIFIER BOX -->
 <div id="notifybox" class="_closable">
     <div class="cross _close" style="margin-right:4px;margin-top:4px;"></div>
     <div id="errormsg">Your browser doesn't work properly here.<br />Please, try to use its newer version.<br />Thank you in advance and sorry for inconvenience.</div>
+</div>
+
+
+<!-- CONNECTWS SCREEN LAYOUT -->
+<div id="connectws_holder" class="shadow">
+    <div><span>New data server address:</span></div>
+    <form class="_hotkeyable" method="post">
+        <div><input type="text" id="connectws_addr" value="" /></div>
+        <input type="submit" style="display:none" />
+    </form>
+    <div class="btn btn2 _hotkey" id="connectws_trigger" style="width:100px;margin:0 auto;">connect</div>
+    <div id="connectws_last_list" style="display:none;">Last used:</div>
 </div>
 
 
@@ -58,7 +71,7 @@
 
     <!-- div id="readme">Please, select one or more topics.</div -->
 
-    <div id="settings_trigger" class="btn btn2 right" style="margin-top:6px;">settings</div>
+    <div id="settings_trigger" class="btn btn3 right" style="display:none;margin-top:6px;margin-right:10px;width:100px;">settings</div>
 </div>
 
 
@@ -72,6 +85,7 @@
             <li rel="cols">columns</li>
             <li rel="table">table</li>
             <li rel="units">units</li>
+            <li rel="conn">disconnect</li>
         </ul>
 
         <div class="ipane" rel="cols">
@@ -81,7 +95,7 @@
 
             <div class="clear" style="padding-top:10px;"></div>
 
-            <div class="btn settings_apply" style="width:120px;margin:0 auto;">apply and save</div>
+            <div class="btn settings_apply">apply and save</div>
         </div>
 
         <div class="ipane" rel="table">
@@ -93,7 +107,7 @@
 
             <div class="clear"></div>
 
-            <div class="btn settings_apply" style="width:120px;margin:0 auto;">apply and save</div>
+            <div class="btn settings_apply">apply and save</div>
         </div>
 
         <div class="ipane" rel="units">
@@ -102,7 +116,12 @@
                 <div id="ipane_units_holder"></div>
                 <input type="submit" style="display:none" />
             </form>
-            <div class="btn settings_apply _hotkey" style="width:120px;margin:0 auto;">apply and save</div>
+            <div class="btn settings_apply _hotkey">apply and save</div>
+        </div>
+
+        <div class="ipane" rel="conn">
+            <div class="center" style="padding-top:30px;">Use before connecting to the other data server.</div>
+            <div id="connectws_disconnect" class="btn btn3" style="width:120px;margin:30px auto;">disconnect</div>
         </div>
 
     </div>
@@ -385,7 +404,7 @@
 
 <!-- FOOTER LAYOUT -->
 <div id="footer">
-    <span>Powered by Tilde <a href="https://github.com/tilde-lab/berlinium">Berlinium</a> GUI.</span>
+    <span>Powered by Tilde <a href="https://github.com/tilde-lab/berlinium">Berlinium</a> GUI</span>
 </div>
 
 </body>
