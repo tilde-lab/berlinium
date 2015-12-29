@@ -11,8 +11,8 @@ _gui.debug_regime = false;
 _gui.rendered = [];
 _gui.tab_buffer = [];
 _gui.req_stack = [];
-_gui.search_hash = null; // FIXME remove as redundant
-_gui.search_req = false; // todo: request history dispatcher
+_gui.search_hash = null; // FIXME issue #3 remove as redundant
+_gui.search_req = false; // FIXME: request history dispatcher
 _gui.conditions = false;
 _gui.socket = null;
 _gui.sortdisable = false;
@@ -96,13 +96,13 @@ _gui.conn = function(){
 }
 
 function __send(act, req){
-    if (_gui.debug_regime) console.log('REQUESTED: '+act); // invalid for login TODO
+    if (_gui.debug_regime) console.log('REQUESTED: '+act); // invalid for login act
 
     _gui.req_stack.push(act);
 
     $('#loadbox').show();
 
-    if (act == 'browse') _gui.search_req = req; // todo: request history dispatcher
+    if (act == 'browse') _gui.search_req = req; // FIXME: request history dispatcher
 
     try{
         _gui.socket.send( JSON.stringify({'act': act, 'req': req}) );
@@ -354,8 +354,8 @@ function gather_plots_data(){
                 var s = t.split('x'), t = 1;
                 for (var i=0; i<s.length; i++){ t *= parseInt(s[i]) }
             } else if (t.indexOf(',') != -1) {
-                // special case
-                if (t.indexOf('biel') == -1){ // TODO!
+                // special CRYSTAL case
+                if (t.indexOf('biel') == -1){
                     var s = t.split(',');
                     for (var i=0; i<s.length; i++){ s[i] = parseFloat(s[i]) }
                     t = Math.max.apply(null, s);
@@ -393,7 +393,7 @@ function clean_plots(){
 
 function align_page(){
     (_gui.cwidth < 1280) ? $('div.supercat').css('width', '98%') : $('div.supercat').css('width', '49%');
-} // FIXME
+} // test width!
 /**
 *
 *
@@ -634,7 +634,7 @@ function resp__browse(req, data){
     if ($('#databrowser td').length > 1) $('#databrowser').tablesorter({sortMultiSortKey:'ctrlKey'});
 
     // GRAPH CHECKBOXES
-    // (UNFORTUNATELY HERE : TODO)
+    // FIXME: move to event declaration
     $('#databrowser').on('click', 'input.sc', function(ev){
         //ev.stopImmediatePropagation();
         var cat = $(this).parent().attr('rel');
@@ -839,7 +839,7 @@ function resp__settings(req, data){
         // re-draw data table without modifying tags
         if (!$('#grid_holder').is(':visible')) return;
 
-        //FIXME
+        //FIXME issue #3
         var anchors = window.location.hash.substr(1).split('/');
         if (anchors[0] == 'show'){
             window.location.hash = '#entries/' + anchors[1];
@@ -1234,7 +1234,7 @@ $(document).ready(function(){
             // re-draw data table without modifying tags
             if (!$('#databrowser').is(':visible')) return;
 
-            //FIXME
+            //FIXME issue #3
             var anchors = window.location.hash.substr(1).split('/');
             if (anchors[0] == 'show'){
                 window.location.hash = '#entries/' + anchors[1];
