@@ -11,7 +11,7 @@ _gui.debug_regime = false;
 _gui.rendered = [];
 _gui.tab_buffer = [];
 _gui.req_stack = [];
-_gui.search_hash = null; // todo: request history dispatcher
+_gui.search_hash = null; // FIXME remove as redundant
 _gui.search_req = false; // todo: request history dispatcher
 _gui.conditions = false;
 _gui.socket = null;
@@ -838,8 +838,15 @@ function resp__settings(req, data){
     if (req.area == 'cols'){
         // re-draw data table without modifying tags
         if (!$('#grid_holder').is(':visible')) return;
-        if (_gui.search_req) __send('browse', _gui.search_req);
-        else window.location.reload();
+
+        //FIXME
+        var anchors = window.location.hash.substr(1).split('/');
+        if (anchors[0] == 'show'){
+            window.location.hash = '#entries/' + anchors[1];
+        } else {
+            if (_gui.search_req) __send('browse', _gui.search_req);
+            else window.location.reload();
+        }
     }
     console.log('SETTINGS SAVED!');
 }
@@ -1189,7 +1196,6 @@ $(document).ready(function(){
             open_ipane('cols');
         }
     });
-
     // SETTINGS: EXPLICIT CLICK TO SAVE
     $('div.settings_apply').click(function(){
         if ($('#settings_cols').is(':visible')){
@@ -1227,16 +1233,14 @@ $(document).ready(function(){
 
             // re-draw data table without modifying tags
             if (!$('#databrowser').is(':visible')) return;
-            if (_gui.search_req) __send('browse', _gui.search_req);
+
+            //FIXME
+            var anchors = window.location.hash.substr(1).split('/');
+            if (anchors[0] == 'show'){
+                window.location.hash = '#entries/' + anchors[1];
+            } else if (_gui.search_req) __send('browse', _gui.search_req);
         }
     });
-
-    // UNIVERSAL ENTER HOTKEY: NOTE ACTION BUTTON *UNDER THE SAME DIV* WITH THE FORM
-    $(document.body).on('submit', 'form._hotkeyable', function(){
-        $(this).parent().children('div._hotkey').trigger("click");
-        return false;
-    });
-
     // SETTINGS: UNITS
     $('#ipane_units_holder').on('click', 'input', function(){
         var sets = _gui.settings.units;
@@ -1251,7 +1255,12 @@ $(document).ready(function(){
         $.jStorage.set(_gui.ws_server, _gui.settings);
         $('span.units-energy').text(_gui.settings.units.energy);
     });
-
+/**
+*
+*
+* *********************************************************************************************************************
+*
+*/
     $('#connectws_trigger').click(function(){
         var url = $('#connectws_addr').val();
         if (!url) return notify("Invalid address!");
@@ -1269,6 +1278,12 @@ $(document).ready(function(){
 * *********************************************************************************************************************
 *
 */
+    // UNIVERSAL ENTER HOTKEY: NOTE ACTION BUTTON *UNDER THE SAME DIV* WITH THE FORM
+    $(document.body).on('submit', 'form._hotkeyable', function(){
+        $(this).parent().children('div._hotkey').trigger("click");
+        return false;
+    });
+
     // RESIZE
     $(window).resize(function(){
         if (Math.abs(_gui.cwidth - document.body.clientWidth) < 30) return; // width of scrollbar

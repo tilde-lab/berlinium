@@ -5,7 +5,7 @@ html, body{height:100%;}
 .right{float:right;}
 .clear{clear:both;}
 .center{text-align:center;}
-sub{font-size:0.6em;}
+sub{font-size:0.7em;}
 
 #menu{height:40px;width:100%;background:#f6f6f6;position:fixed;left:0;top:0;z-index:35;overflow:hidden;}
 
