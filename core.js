@@ -528,6 +528,8 @@ function url__found(arg){
         _gui.search_req.start = start, _gui.search_req.sortby = sortby;
         __send('browse', _gui.search_req);
     }
+
+    _gui.search_hash = '#found/' + arg.join('/');
 }
 /**
 *
@@ -569,7 +571,7 @@ function resp__login(req, data){
     });
     var result_html = '';
     $.each(data.cats, function(n, i){
-        if (i.settings_group && i.html_pocket.length) result_html += '<div class="ipane_cols_holder"><span>' + i.category.charAt(0).toUpperCase() + i.category.slice(1) + '</span><ul>' + i.html_pocket + '</ul></div>';
+        if (i.settings_group && i.html_pocket.length) result_html += '<div class="ipane_cols_holder"><span>' + i.category + '</span><ul>' + i.html_pocket + '</ul></div>';
     });
     $('#settings_cols').empty().append( result_html );
     $('#settings_trigger').show();
@@ -630,6 +632,35 @@ function resp__browse(req, data){
     $('span.units-energy').text(_gui.settings.units.energy);
 
     if ($('#databrowser td').length > 1) $('#databrowser').tablesorter({sortMultiSortKey:'ctrlKey'});
+
+    // GRAPH CHECKBOXES
+    // (UNFORTUNATELY HERE : TODO)
+    $('#databrowser').on('click', 'input.sc', function(ev){
+        //ev.stopImmediatePropagation();
+        var cat = $(this).parent().attr('rel');
+        $('.selected').removeClass('selected');
+
+        $('input.SHFT_cb').prop('checked', false);
+
+        if ($(this).is(':checked')){
+            _gui.plots.push(cat);
+            if (_gui.plots.length > 2){
+                var old = _gui.plots.shift();
+                $('#databrowser th[rel='+old+']').children('input').prop('checked', false);
+            }
+        } else {
+            $(this).parent().removeClass('selected');
+            var iold = _gui.plots.indexOf(cat);
+            _gui.plots.splice(iold, 1);
+        }
+
+        $.each(_gui.plots, function(n, i){
+            $('#databrowser td[rel='+i+'], #databrowser th[rel='+i+']').addClass('selected');
+        });
+
+        if (_gui.plots.length) switch_menus(2);
+        else switch_menus();
+    });
 
     if (data.count > _gui.settings.colnum){
         var pcount = Math.ceil(data.count / _gui.settings.colnum);
@@ -807,11 +838,8 @@ function resp__settings(req, data){
     if (req.area == 'cols'){
         // re-draw data table without modifying tags
         if (!$('#grid_holder').is(':visible')) return;
-        if (_gui.search_hash){
-            var search_base = _gui.search_hash.substr(1).split('/').slice(0, 2).join('/');
-            if (_gui.search_hash.substr(_gui.search_hash.length-2) == '/0') window.location.hash = '#' + search_base;
-            else window.location.hash = '#' + search_base + '/0';
-        } else window.location.reload();
+        if (_gui.search_req) __send('browse', _gui.search_req);
+        else window.location.reload();
     }
     console.log('SETTINGS SAVED!');
 }
@@ -939,35 +967,6 @@ $(document).ready(function(){
             $('#databrowser tr').removeClass('selected');
             switch_menus();
         }
-    });
-
-    // GRAPH CHECKBOXES
-    // (UNFORTUNATELY HERE : TODO)
-    $('#databrowser').on('click', 'input.sc', function(ev){
-        ev.stopImmediatePropagation();
-        var cat = $(this).parent().attr('rel');
-        $('.selected').removeClass('selected');
-
-        $('input.SHFT_cb').prop('checked', false);
-
-        if ($(this).is(':checked')){
-            _gui.plots.push(cat);
-            if (_gui.plots.length > 2){
-                var old = _gui.plots.shift();
-                $('#databrowser th[rel='+old+']').children('input').prop('checked', false);
-            }
-        } else {
-            $(this).parent().removeClass('selected');
-            var iold = _gui.plots.indexOf(cat);
-            _gui.plots.splice(iold, 1);
-        }
-
-        $.each(_gui.plots, function(n, i){
-            $('#databrowser td[rel='+i+'], #databrowser th[rel='+i+']').addClass('selected');
-        });
-
-        if (_gui.plots.length) switch_menus(2);
-        else switch_menus();
     });
 
     // DEFAULT SOFTING
@@ -1222,6 +1221,8 @@ $(document).ready(function(){
 
             $('#profile_holder').hide();
         } else if ($('#ipane_units_holder').is(':visible')){
+
+            // SETTINGS: UNITS
             $('#profile_holder').hide();
 
             // re-draw data table without modifying tags
