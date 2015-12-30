@@ -635,8 +635,8 @@ function resp__browse(req, data){
 
     // GRAPH CHECKBOXES
     // FIXME: move to event declaration
-    $('#databrowser').on('click', 'input.sc', function(ev){
-        //ev.stopImmediatePropagation();
+    $('input.sc').click(function(ev){
+        ev.stopImmediatePropagation();
         var cat = $(this).parent().attr('rel');
         $('.selected').removeClass('selected');
 
@@ -844,7 +844,7 @@ function resp__settings(req, data){
         if (anchors[0] == 'show'){
             window.location.hash = '#entries/' + anchors[1];
         } else {
-            if (_gui.search_req) __send('browse', _gui.search_req);
+            if (_gui.search_req) __send('browse', _gui.search_req); // FIXME: nothing may be shown if maxitems change
             else window.location.reload();
         }
     }
@@ -878,7 +878,7 @@ $(document).ready(function(){
 
     var last_servers_html = '';
     $.each($.jStorage.index(), function(n, i){
-        last_servers_html += '<a class=connectws_last href=?'+i+'>'+i+'</a>';
+        if (i.startswith('http://') || i.startswith('https://')) last_servers_html += '<a class=connectws_last href=?'+i+'>'+i+'</a>';
     });
     if (last_servers_html.length) $('#connectws_last_list').append(last_servers_html).show();
 
@@ -1214,7 +1214,7 @@ $(document).ready(function(){
 
         } else if ($('#ipane_maxitems_holder').is(':visible')){
 
-            // SETTINGS: TABLE
+            // SETTINGS: TABLE MAX ITEMS
             $('#ipane_maxitems_holder > input').each(function(){
                 if ($(this).is(':checked')){
                     _gui.settings.colnum = parseInt( $(this).attr('value') );
