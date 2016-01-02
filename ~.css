@@ -94,14 +94,14 @@ div.tagcapt{float:left;width:180px;color:#600;padding:12px 0 6px 5px;font-size:0
 div.tagarea{float:left;width:70%;margin:6px 0;min-height:30px;}
 div.tagarea_reduced{height:2.25em;overflow:hidden;}
 
-a.tag{display:inline-block;height:24px;min-width:2.5em;font-size:1.05em;color:#eee;background:#fff;text-decoration:underline;padding:2px;margin:2px;text-align:center;border:1px solid #f0f0f0;}
+a.tag{display:inline-block;height:24px;min-width:2.5em;font-size:1em;color:#eee;background:#fff;text-decoration:none;padding:2px;margin:2px;text-align:center;border:1px solid #f0f0f0;}
 a.activetag{color:#fff;background:#333;}
 a.activetag:hover{color:#333;background:#fff;}
 a.visibletag{color:#333;background:#fff;}
 a.visibletag:hover{color:#fff;background:#333;}
 a.visibletag.activetag{color:#fff;background:#333;}
 
-a.mdtag{height:21px;padding:1px 3px;font-size:1.1em;color:#eee;background:#fff;text-decoration:underline;}
+a.mdtag{height:21px;padding:1px 3px;font-size:1.1em;color:#eee;background:#fff;text-decoration:none;}
 a.mdtag.visibletag{color:#333;}
 a.mdtag.visibletag:hover{color:#fff;background:#333;}
 a.mdtag.activetag{color:#fff;}
@@ -144,7 +144,7 @@ a.connectws_last:hover{background:#06c;}
 div.loading{background:#fff url(images/spinner.gif) no-repeat center center;}
 
 /* TAGS SCREEN */
-#splashscreen_holder{width:100%;background:#fff;min-height:100%;height:auto !important;height:100%;margin-bottom:-60px;}
+#splashscreen_holder{width:100%;background:#fff url(images/bg.gif);min-height:100%;height:auto !important;height:100%;margin-bottom:-60px;}
 #splashscreen{width:100%;padding-top:53px;}
 
 /* FOOTER */
@@ -181,7 +181,7 @@ transform: scaleY(1.0);
 
 /* SUPERCATS */
 div.supercat{width:49%;margin-bottom:30px;}
-div.supercat_title{width:100%;margin:0 auto;background:#fff;color:#06c;font-size:1.2em;line-height:3.2em;font-weight:bold;text-align:center;}
+div.supercat_title{width:100%;margin:0 auto;color:#06c;font-size:1.2em;line-height:3.2em;font-weight:bold;text-align:center;}
 div.supercat_content{margin:0;}
 #supercat_1, #supercat_3, #supercat_4, #supercat_5 {float:left;}
 #supercat_2 {float:right;}
@@ -253,7 +253,7 @@ div.gui_slider_max{width:16%;text-align:right;float:left;margin-top:6px;}
     transform: translate3d(0,0,0);
 }
 .noUi-horizontal {
-    height: 10px;
+    height: 8px;
 }
 .noUi-horizontal .noUi-handle {
     width: 34px;
