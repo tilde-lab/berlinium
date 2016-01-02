@@ -670,8 +670,8 @@ function resp__browse(req, data){
         for (var i=1; i<(pcount+1); i++){
             var active_class = '';
             if (i == req.start+1) active_class = ' pglink_active';
-            if (i > Math.round(_gui.cwidth/95)) break; // FIXME
-            plinks += '<a class="pglink' + active_class + '" href="#' + anchor_base + '/' + i + '">p' + i + '</a>';
+            if (i > Math.round(_gui.cwidth/75)) break; // FIXME
+            plinks += '<a class="pglink' + active_class + '" href="#' + anchor_base + '/' + i + '">' + i + '</a>';
         }
         $('a.pglink').remove();
         $('div.data_ctrl').append(plinks).show();
