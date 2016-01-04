@@ -716,14 +716,13 @@ function resp__tags(req, data){
                 $.each(value.content, function(n, i){
                     tags_piece += '<a class="tag taglink visibletag _tag' + i.tid + '" rel="' + i.tid + '" href=#>' + i.topic + '</a>';
                 });
-            } else if (value.type == 'slider') {
+            } else if (value.type == 'slider'){
 
                 tags_piece = '<div class="sliderow" ' + tags_piece + ' class="tagarea">';
                 tags_piece += '<div class="gui_slider_holder"> <div class="gui_slider_min"></div> <div class="gui_slider" id=gui_slider_'+num+' min='+value.min+' max='+value.max+'></div> <div class="gui_slider_max"></div> </div>';
-            } else if (value.type == 'mendeleev') {
+            } else if (value.type == 'mendeleev'){ // FIXME issue #7
 
-                tags_piece = '<div class="mendeleevrow" ' + tags_piece + ' class="tagarea">';
-                tags_piece += '<div class="mendeleevrow_holder"></div>';
+                tags_piece = '<div class="mendeleevrow"><div>';
                 _gui.mendeleev[parseInt(value.cid)] = value.content;
             }
 

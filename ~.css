@@ -14,7 +14,7 @@ sub{font-size:0.7em;}
 #main{width:100%;min-height:100%;height:auto !important;height:100%;background:#fff url(images/bg.gif);margin-bottom:-60px;}
 #splashscreen_holder{width:100%;height:100%;}
 #splashscreen{width:100%;padding-top:53px;}
-#grid_holder{z-index:30;width:100%;padding-top:40px;}
+#grid_holder{z-index:30;width:100%;padding:41px 0 60px;}
 #footer{z-index:40;height:59px;width:100%;background:#f6f6f6;text-align:center;clear:both;border-top:1px solid #f0f0f0;}
 #footer span{display:inline-block;font-size:1.1em;padding-top:18px;color:#999;}
 #footer span a{color:#999;}
@@ -106,26 +106,24 @@ div.flot_holder{width:97%;height:460px;margin:0 auto 5px;}
 div.menu_cmds{margin-top:3px;float:left;}
 div.ctx_caption{padding:7px 0 0 8px;}
 table{width:100%;text-align:left;border-spacing:0;font-size:0.9em;}
-#databrowser{padding-bottom:60px;}
 #databrowser > tbody > tr > td{cursor:pointer;}
 #databrowser > tbody > tr > td{line-height:18px;border-top:1px solid #eee;}
-thead th{line-height:18px;border-top:1px solid #000;}
-#databrowser > tbody > tr:first-child td{border-top:1px solid #999;}
-#databrowser > tbody > tr:last-child td{border-bottom:1px solid #999;}
+#databrowser > tbody > tr:first-child td{border-top:1px solid #ccc;}
+#databrowser > tbody > tr:last-child td{border-bottom:1px solid #ccc;}
 tbody td:first-child{padding-left:4px;}
-thead tr th{background:#fff;padding:4px;}
-tbody td{color:#3D3D3D;padding:2px 1px;background:#fff;vertical-align:middle;}
+tbody td{color:#3D3D3D;padding:2px 1px;background:#fff;vertical-align:middle;text-align:center;}
 tbody td.em{font-size:10px;}
+thead tr th{background:#fff;padding:10px 4px;line-height:1.25em;text-align:center;font-weight:normal;}
 thead tr th.header{background-image:url(images/asc.gif), url(images/desc.gif);background-position:center bottom, center top;background-repeat:no-repeat;cursor:pointer;}
 thead tr th.headerSortUp{background:url(images/asc.gif) center bottom no-repeat;}
 thead tr th.headerSortDown{background:url(images/desc.gif) center top no-repeat;}
-thead tr th.headerSortDown, thead tr th.headerSortUp{background-color:#dddddd;}
+thead tr th.headerSortDown, thead tr th.headerSortUp{background-color:#ffc;}
 thead tr th.disabled{background:#fff;}
 tr.selected td, td.selected, th.selected{background:#ffc;}
 input.sc{margin-left:3px;}
 tr.obj_holder{cursor:default;}
 tr.obj_holder th{font-weight:normal;border-color:#eee;}
-td[rel="24"], td[rel="25"]{text-align:center;}
+td[rel="1"]{text-align:left;}
 
 /* PHONONS PANE */
 
@@ -180,7 +178,7 @@ div.supercat_content{margin:0;}
 
 #mendeleev_table_factory{display:none;}
 div.mendeleev_table_factory_holder{z-index:50;width:100%;margin:0 auto;clear:both;background:#ddd;}
-div.mendeleev_table_holder{z-index:51;margin-bottom:20px;}
+div.mendeleev_table_holder{z-index:51;margin-bottom:15px;border:1px solid #f6f6f6;}
 div.mendeleev_table_holder table{border:0;}
 div.mendeleev_table_holder table tr td div{color:#eee;height:21px;text-align:center;}
 
