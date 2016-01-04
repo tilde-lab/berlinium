@@ -32,7 +32,7 @@
 </div>
 
 
-<!-- CONNECTWS SCREEN LAYOUT -->
+<!-- CONNECTWS LAYOUT -->
 <div id="connectws_holder" class="shadow">
     <div><span>New data server address:</span></div>
     <form class="_hotkeyable" method="post">
@@ -41,37 +41,6 @@
     </form>
     <div class="btn btn2 _hotkey" id="connectws_trigger" style="width:100px;margin:0 auto;">connect</div>
     <div id="connectws_last_list" style="display:none;">Last used:</div>
-</div>
-
-
-<!-- MENU LAYOUT -->
-<div id="menu">
-
-    <div id="menu_main_cmds" class="menu_cmds" style="display:none;">
-        <div class="btn btn2 left" id="noclass_trigger">back to search</div>
-        <!-- div class="btn btn3 left" id="closeobj_trigger" style="display:none;">collapse all</div -->
-        <div class="data_ctrl left">
-            <div class="left"><select class="default_order_ctrl"><option value="-1" selected="selected">default sort by...</option><option value="0">chemical formula</option><option value="1">layout in filesystem</option></select></div>
-        </div>
-    </div>
-
-    <div id="menu_row_cmds" class="menu_cmds" style="display:none;">
-        <div class="left ctx_caption">The row(s):</div>
-        <div class="btn btn2 left" id="expand_trigger">show details</div>
-        <div class="btn left" id="hide_trigger">hide</div>
-        <div class="btn left" id="cancel_rows_trigger">cancel</div>
-    </div>
-
-    <div id="menu_col_cmds" class="menu_cmds" style="display:none;">
-        <div class="left ctx_caption">The column(s):</div>
-        <div class="btn btn2 left" id="plot_trigger">plot interactively</div>
-        <div class="btn btn2 left" id="export_cols_trigger">export</div>
-        <div class="btn left" id="cancel_cols_trigger">cancel</div>
-    </div>
-
-    <!-- div id="readme">Please, select one or more topics.</div -->
-
-    <div id="settings_trigger" class="btn right" style="display:none;margin-top:5px;margin-right:10px;width:100px;font-size:1.1em;">settings</div>
 </div>
 
 
@@ -133,7 +102,7 @@
 <div id="object_factory" class="object_factory_holder shadow">
     <div class="object_holder">
 
-    <!-- OBJECT MAIN LAYOUT LEFT SIDE -->
+    <!-- LEFT SIDE -->
     <div class="object_ctx_left">
         <ul class="ipane_ctrl">
             <li rel="summary">summary</li>
@@ -176,7 +145,7 @@
         </div>
     </div>
 
-    <!-- OBJECT MAIN LAYOUT RIGHT SIDE -->
+    <!-- RIGHT SIDE -->
     <div class="object_ctx_right">
         <ul class="ipane_ctrl">
             <li rel="3dview">3D-view</li>
@@ -389,22 +358,55 @@
     <div id="column_plot" class="flot_holder"></div>
 </div>
 
+<!-- STATICALLY POSITIONED LAYOUT -->
+<!-- MENU LAYOUT -->
+<div id="menu">
 
-<!-- START (TAGS) LAYOUT -->
-<div id="splashscreen_holder">
-    <div id="splashscreen"></div>
+    <div id="menu_main_cmds" class="menu_cmds" style="display:none;">
+        <div class="btn btn2 left" id="noclass_trigger">back to search</div>
+        <!-- div class="btn btn3 left" id="closeobj_trigger" style="display:none;">collapse all</div -->
+        <div class="data_ctrl left">
+            <div class="left"><select class="default_order_ctrl"><option value="-1" selected="selected">default sort by...</option><option value="0">chemical formula</option><option value="1">layout in filesystem</option></select></div>
+        </div>
+    </div>
+
+    <div id="menu_row_cmds" class="menu_cmds" style="display:none;">
+        <div class="left ctx_caption">The row(s):</div>
+        <div class="btn btn2 left" id="expand_trigger">show details</div>
+        <div class="btn left" id="hide_trigger">hide</div>
+        <div class="btn left" id="cancel_rows_trigger">cancel</div>
+    </div>
+
+    <div id="menu_col_cmds" class="menu_cmds" style="display:none;">
+        <div class="left ctx_caption">The column(s):</div>
+        <div class="btn btn2 left" id="plot_trigger">plot interactively</div>
+        <div class="btn btn2 left" id="export_cols_trigger">export</div>
+        <div class="btn left" id="cancel_cols_trigger">cancel</div>
+    </div>
+
+    <!-- div id="readme">Please, select one or more topics.</div -->
+
+    <div id="settings_trigger" class="btn right" style="display:none;margin-top:5px;margin-right:10px;width:100px;font-size:1.1em;">settings</div>
 </div>
 
 
-<!-- DATABROWSER LAYOUT -->
-<div id="grid_holder" style="display:none;">
-    <table id="databrowser" class="tablesorter"></table>
+<div id="main">
+    <!-- START (TAGS) LAYOUT -->
+    <div id="splashscreen_holder">
+        <div id="splashscreen"></div>
+    </div>
+
+
+    <!-- DATABROWSER LAYOUT -->
+    <div id="grid_holder" style="display:none;">
+        <table id="databrowser" class="tablesorter"></table>
+    </div>
 </div>
 
 
 <!-- FOOTER LAYOUT -->
 <div id="footer">
-    <span>Powered by Tilde <a href="https://github.com/tilde-lab/berlinium">Berlinium</a> GUI</span>
+    <span>Powered by Tilde <a href="https://github.com/tilde-lab/berlinium">Berlinium</a></span>
 </div>
 
 </body>
