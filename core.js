@@ -5,7 +5,7 @@
 *
 */
 var _gui = {};
-_gui.version = '0.7.5';
+_gui.version = '0.8.0';
 _gui.title = '';
 _gui.debug_regime = false;
 _gui.rendered = [];
@@ -571,7 +571,7 @@ function resp__login(req, data){
     });
     var result_html = '';
     $.each(data.cats, function(n, i){
-        if (i.settings_group && i.html_pocket.length) result_html += '<div class="ipane_cols_holder"><span>' + i.category + '</span><ul>' + i.html_pocket + '</ul></div>';
+        if (i.settings_group && i.html_pocket.length) result_html += '<div class="ipane_cols_holder"><span>' + i.category.charAt(0).toUpperCase() + i.category.slice(1) + '</span><ul>' + i.html_pocket + '</ul></div>';
     });
     $('#settings_cols').empty().append( result_html );
     $('#settings_trigger').show();
@@ -708,11 +708,11 @@ function resp__tags(req, data){
             if (value.type == 'tag'){
 
                 tags_piece = '<div class="tagrow" ' + tags_piece + ' class="tagarea">';
-                value.content.sort(function(a, b){
+                /*value.content.sort(function(a, b){
                     if (a.topic < b.topic) return -1;
                     else if (a.topic > b.topic) return 1;
                     else return 0;
-                });
+                });*/
                 $.each(value.content, function(n, i){
                     tags_piece += '<a class="tag taglink visibletag _tag' + i.tid + '" rel="' + i.tid + '" href=#>' + i.topic + '</a>';
                 });
@@ -1022,8 +1022,8 @@ $(document).ready(function(){
     // DATABROWSER MENU
     $('#noclass_trigger').click(function(){
         _gui.req_stack = [];
-        defaultize_tags();
-        defaultize_sliders();
+        //defaultize_tags();
+        //defaultize_sliders();
         window.location.hash = '#start';
     });
     /*$('#closeobj_trigger').click(function(){
