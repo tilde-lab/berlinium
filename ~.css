@@ -53,9 +53,10 @@ transform: scaleY(1.0);
 }
 #abortbox{z-index:91;display:none;position:fixed;top:33%;left:50%;margin-left:-100px;margin-top:45px;width:200px;font-size:1.1em;font-weight:bold;color:#06c;text-align:center;}
 #abort_trigger{text-decoration:underline;cursor:pointer;}
-#initbox{z-index:90;display:none;position:fixed;top:0;left:50%;margin-left:-140px;width:280px;padding:2px 0 0 4px;height:40px;}
+#initbox{z-index:90;display:none;position:fixed;top:0;left:50%;margin-left:-350px;width:700px;padding:2px 0 0 4px;height:40px;}
 #initbox div{font-size:1.1em;}
-#notifybox{z-index:93;position:fixed;top:4px;left:50%;margin-left:-300px;font-size:1em;background:#fc0;color:#666;font-weight:bold;width:600px;min-height:20px;height:auto !important;height:20px;text-align:center;line-height:1.7em;border-radius:6px;}
+#search_field{border:1px solid #06c;width:480px;height:30px;font-size:1.2em;margin:4px 3px 0 0;float:left;padding:0 3px;letter-spacing:-1px;}
+#notifybox{z-index:93;position:fixed;bottom:20px;right:20px;font-size:1.2em;background:#fc0;color:#000;font-weight:bold;width:540px;min-height:20px;height:auto !important;height:20px;text-align:center;line-height:1.8em;border-radius:6px;}
 #errormsg{margin:6px;}
 
 /* COMMON STYLES */
@@ -161,7 +162,7 @@ a.pglink_active{background:#600;color:#fff;}
 
 /* CONNECTWS PANE */
 
-#connectws_holder{position:absolute;z-index:92;width:700px;height:auto;top:32px;left:50%;margin-left:-350px;padding:25px 0 50px;background:#fff;}
+#connectws_holder{position:absolute;z-index:92;width:700px;height:auto;top:26px;left:50%;margin-left:-350px;padding:25px 0 50px;background:#fff;}
 #connectws_holder div{text-align:center;margin:20px;}
 #connectws_holder span{color:#666;}
 #connectws_holder input{text-align:center;font-size:1.5em;width:85%;margin:0 auto;border:1px solid #06c;padding:1px;}
@@ -331,3 +332,13 @@ div.gui_slider_max{width:16%;text-align:right;float:left;margin-top:6px;}
 [disabled] .noUi-handle {
     cursor: not-allowed;
 }
+
+/* AUTOCOMPLETE */
+.autocomplete-suggestions {
+    text-align: left; cursor: default; border: 1px solid #ccc; border-top: 0; background: #fff; box-shadow: -1px 1px 3px rgba(0,0,0,.1);
+    /* core styles should not be changed */
+    position: absolute; display: none; z-index: 9999; max-height: 254px; overflow: hidden; overflow-y: auto; box-sizing: border-box;
+}
+.autocomplete-suggestion { position: relative; padding: 0 .6em; line-height: 23px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.02em; color: #333; }
+.autocomplete-suggestion b { font-weight: normal; color: #06c; }
+.autocomplete-suggestion.selected { background: #f0f0f0; }
