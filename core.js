@@ -32,7 +32,7 @@ _gui.units = {
 _gui.unit_capts = {'energy':'Energy', 'phonons':'Phonon frequencies'};
 _gui.default_settings = {};
 _gui.default_settings.units = {'energy':'eV', 'phonons':'cm<sup>-1</sup>'};
-_gui.default_settings.cols = [1, 1002, 1501, 1502, 1503, 7, 17, 9, 10, 50, 23, 27, 24]; // cid's of hierarchy API
+_gui.default_settings.cols = [1, 1002, 1501, 1502, 1503, 7, 50, 22, 23, 27]; // cid's of hierarchy API
 _gui.default_settings.colnum = 100;
 //_gui.default_settings.objects_expand = true;
 _gui.permaurl = window.location.protocol + '//' + window.location.host + window.location.pathname;
@@ -71,7 +71,6 @@ _gui.conn = function(){
         console.log('CONNECTED.');
         $('#notifybox').hide();
         $('#abortbox').hide();
-        _gui.connattempts = 0;
         _gui.settings = $.jStorage.get(_gui.ws_server, _gui.default_settings); // initialize client-side settings
         __send('login',  {settings: _gui.settings} );
     }
@@ -86,7 +85,7 @@ _gui.conn = function(){
 
         if (!_gui.req_stack.length) $('#loadbox').hide();
 
-        if (response.error && response.error.length>1) return notify('Error in '+response.act+' handler:<br />'+response.error);
+        if (response.error && response.error.length>1) return notify('Error while '+response.act+':<br />'+response.error);
 
         if (window['resp__' + response.act]) window['resp__' + response.act](response.req, response.result);
         else notify('Unhandled action received: ' + response.act);
@@ -101,7 +100,7 @@ _gui.conn = function(){
             return notify('Connection to server '+_gui.ws_server+' cannot be established.');
         }
         console.log('CONNECTION WITH SERVER HAS FAILED!');
-        setTimeout(function(){ _gui.conn() }, 0);
+        setTimeout(function(){ _gui.conn() }, _gui.connattempts*1500 + 1000);
     }
 }
 
@@ -793,6 +792,7 @@ function resp__login(req, data){
     //    var action = _gui.last_request.split( _gui.wsock_delim );
     //    __send(action[0], action[1]);
     //}
+    _gui.connattempts = 0;
     if (data.debug_regime) _gui.debug_regime = true;
 
     if (_gui.debug_regime) console.log("RECEIVED SETTINGS: " + JSON.stringify(data.settings));
