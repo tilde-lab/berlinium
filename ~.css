@@ -75,7 +75,7 @@ div.shadow{box-shadow:-1.5px 1.5px 1.5px 1.5px #999;}
 span.link, span.red, span.white{text-decoration:underline;cursor:pointer;color:#06c;}
 span.red{color:#900;}
 span.white{text-decoration:underline;cursor:pointer;color:#fff;}
-div.loading{background:#fff url(images/spinner.gif) no-repeat center center;}
+div.loading{background:#fff url(https://raw.githubusercontent.com/tilde-lab/berlinium/gh-pages/images/spinner.gif) no-repeat center center;}
 div.cross{margin-right:10px;float:right;width:16px;height:16px;font-size:10px;text-align:center;cursor:pointer;background:url(data:image/gif;base64,R0lGODlhEAAQAJEAAAAAAP///1VVVf///yH5BAEAAAMALAAAAAAQABAAAAIjnI+py6L+BDRy0gqxHVqvLjGcJ3Yl+IEhQpLX+m7wMYv2PRQAOw==) no-repeat;}
 li.warn{background:#fcc;}
 
@@ -119,9 +119,9 @@ tbody td:first-child{padding-left:4px;}
 tbody td{color:#3D3D3D;padding:2px 1px;background:#fff;vertical-align:middle;}
 tbody td.em{font-size:10px;}
 thead tr th{background:#fff;padding:10px 4px;line-height:1.25em;font-weight:bold;}
-thead tr th.header{background-image:url(images/asc.gif), url(images/desc.gif);background-position:center bottom, center top;background-repeat:no-repeat;cursor:pointer;}
-thead tr th.headerSortUp{background:url(images/asc.gif) center bottom no-repeat;}
-thead tr th.headerSortDown{background:url(images/desc.gif) center top no-repeat;}
+thead tr th.header{background-image:url(https://raw.githubusercontent.com/tilde-lab/berlinium/gh-pages/images/asc.gif), url(https://raw.githubusercontent.com/tilde-lab/berlinium/gh-pages/images/desc.gif);background-position:center bottom, center top;background-repeat:no-repeat;cursor:pointer;}
+thead tr th.headerSortUp{background:url(https://raw.githubusercontent.com/tilde-lab/berlinium/gh-pages/images/asc.gif) center bottom no-repeat;}
+thead tr th.headerSortDown{background:url(https://raw.githubusercontent.com/tilde-lab/berlinium/gh-pages/images/desc.gif) center top no-repeat;}
 thead tr th.headerSortDown, thead tr th.headerSortUp{background-color:#ffc;}
 thead tr th.disabled{background:#fff;}
 tr.selected td, td.selected, th.selected{background:#ffc;}

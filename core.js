@@ -22,6 +22,7 @@ _gui.max_connattempt = 2;
 _gui.searchables = []; // all categs
 _gui.impliables = []; // non-faceted, but selected categs
 _gui.plots = [];
+_gui.player_url = 'https://raw.githubusercontent.com/tilde-lab/berlinium/gh-pages/player.html';
 _gui.mendeleev = {};
 _gui.mendeleev_table = ['X', 'H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr'];
 _gui.last_chkbox = null;
@@ -1084,7 +1085,7 @@ function resp__summary(req, data){
     // 3D IPANE
     open_ipane('3dview', req.datahash);
     _gui.rendered.push(req.datahash);
-    $('#o_' + req.datahash + ' div.renderer').empty().append('<iframe id=f_'+req.datahash+' frameborder=0 scrolling="no" width="100%" height="500" src="player.html?' + req.datahash + '"></iframe>');
+    $('#o_' + req.datahash + ' div.renderer').empty().append('<iframe id="f_' + req.datahash + '" frameborder=0 scrolling="no" width="100%" height="500" src="' + _gui.player_url + '?' + req.datahash + '"></iframe>');
     //$('#phonons_animate').text('animate');
     //window.scrollBy(0, 60);
 }
