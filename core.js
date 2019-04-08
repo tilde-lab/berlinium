@@ -657,8 +657,6 @@ function url_redraw_react(){
 
     clean_plots();
 
-    if (anchors[0].length > 40) window.location.replace('#show/' + anchors[0]); // account previous DOI resolving urls
-
     if (window['url__' + anchors[0]]) window['url__' + anchors[0]](anchors.slice(1));
     else notify('Unknown address: ' + window.location.hash);
 }
@@ -1086,7 +1084,7 @@ function resp__summary(req, data){
     // 3D IPANE
     open_ipane('3dview', req.datahash);
     _gui.rendered.push(req.datahash);
-    $('#o_'+req.datahash + ' div.renderer').empty().append('<iframe id=f_'+req.datahash+' frameborder=0 scrolling="no" width="100%" height="500" src="player.html?'+req.datahash+'"></iframe>');
+    $('#o_' + req.datahash + ' div.renderer').empty().append('<iframe id=f_'+req.datahash+' frameborder=0 scrolling="no" width="100%" height="500" src="player.html?' + req.datahash + '"></iframe>');
     //$('#phonons_animate').text('animate');
     //window.scrollBy(0, 60);
 }
