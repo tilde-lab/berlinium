@@ -454,7 +454,7 @@ var autoComplete = (function(){
             });
         }
 
-        var o = {
+        var o = { // private options, set up in init
             selector: 0,
             source: 0,
             minChars: 3,
@@ -1134,7 +1134,7 @@ $(document).ready(function(){
 
     window.onhashchange = url_redraw_react;
 
-    var search_field = new autoComplete({selector: '#search_field', minChars: 2, source: function(term, suggest){
+    var search_field = new autoComplete({selector: '#search_field', minChars: 1, source: function(term, suggest){
         term = term.toLowerCase();
         var suggestions = [];
         for (i=0; i<_gui.searchables.length; i++){
