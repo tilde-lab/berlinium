@@ -1,11 +1,13 @@
 /**
 *
-* DB GUI
+* Berlinium Tilde GUI
 * Author: Evgeny Blokhin
 *
 */
+//"use strict";
+
 var _gui = {};
-_gui.version = '0.8.0';
+_gui.version = '0.8.5';
 _gui.title = '';
 _gui.debug_regime = false;
 _gui.rendered = [];
@@ -33,11 +35,13 @@ _gui.units = {
 _gui.unit_capts = {'energy':'Energy', 'phonons':'Phonon frequencies'};
 _gui.default_settings = {};
 _gui.default_settings.units = {'energy':'eV', 'phonons':'cm<sup>-1</sup>'};
-_gui.default_settings.cols = [1, 1002, 1501, 1502, 1503, 7, 50, 22, 23, 27]; // cid's of hierarchy API
+_gui.default_settings.cols = [1, 1002, 1501, 7, 50, 22, 23, 27, 1005]; // cid's of hierarchy API
 _gui.default_settings.colnum = 100;
 //_gui.default_settings.objects_expand = true;
 _gui.permaurl = window.location.protocol + '//' + window.location.host + window.location.pathname;
 _gui.ws_server = null;
+_gui.file_relay_server = 'http://tilde.pro/services/fileadmin'; // http://localhost:9991
+
 window.playerdata = {}; // player.html iframe integration
 
 // Polyfills
@@ -137,7 +141,7 @@ function open_ipane(cmd, target){
     current.css('border-bottom-color', '#fff').parent().parent().children( 'div.ipane' ).hide();
     current.parent().parent().find( 'div[rel='+cmd+']' ).show();
 
-    if (_gui.tab_buffer.indexOf(target+'_'+cmd) != -1) return;
+    if (_gui.tab_buffer.indexOf(target + '_' + cmd) != -1) return;
 
     switch(cmd){
         case 'ph_dos':
@@ -152,7 +156,7 @@ function open_ipane(cmd, target){
             __send('phonons',  {datahash: target} );
             break;
     }
-    _gui.tab_buffer.push(target+'_'+cmd);
+    _gui.tab_buffer.push(target + '_' + cmd);
 }
 
 /*function redraw_vib_links( text2link, target ){
@@ -173,7 +177,27 @@ function open_ipane(cmd, target){
     }
 }*/
 
-function close_obj_tab(tab_id){
+function render_wintabs(hashes){
+    $.each(hashes, function(n, item){
+        if (_gui.rendered.indexOf(item) != -1) return true;
+        //console.log('Processing ' + item + ', exists: ' + $('#i_' + item).length);
+
+        if (item.substr(item.length - 2) == 'CI'){
+            // dtype = ab initio calculation
+            __send('summary', {datahash: item});
+
+        } else if (item.substr(item.length - 3) == 'PDF'){
+            // dtype = journal article
+            var obf = $('<tr class=obj_holder></tr>').append( $('<th colspan=20></th>').append( $('#pdf_viewer_factory').clone().removeAttr('id').attr('id', 'o_' + item) ) );
+            $('#i_' + item).after(obf);
+
+            $('#o_' + item + ' > div > iframe').attr('src', _gui.file_relay_server + '/' + $('#i_' + item).data('filename'));
+            _gui.rendered.push(item);
+        }
+    });
+}
+
+function destroy_wintab(tab_id){
     if (_gui.rendered.indexOf(tab_id) == -1) return;
 
     delete _gui.rendered[tab_id];
@@ -423,6 +447,7 @@ function clean_plots(){
 function align_page(){
     (_gui.cwidth < 1280) ? $('div.supercat').css('width', '98%') : $('div.supercat').css('width', '49%');
 } // test width!
+
 /**
 *
 *
@@ -738,18 +763,16 @@ function url__show(arg){
     if (hashes.length > 3){
         var exceeded_hashes = hashes.splice(0, hashes.length-3);
         $.each(exceeded_hashes, function(n, i){
-            close_obj_tab(i);
+            destroy_wintab(i);
         });
         window.location.replace('#show/' + hashes.join('+'));
         return;
     }
 
     var absent_hashes = $.grep(hashes, function(el, index){ return !$('#i_' + el).length });
-    if (absent_hashes.length) __send('browse', {hashes: hashes});
+    if (absent_hashes.length) return __send('browse', {hashes: hashes});
 
-    $.each(hashes, function(n, item){
-        if (_gui.rendered.indexOf(item) == -1) __send('summary', {datahash: item});
-    });
+    render_wintabs(hashes);
 }
 
 function url__found(arg){
@@ -894,7 +917,7 @@ function resp__browse(req, data){
             _gui.plots.push(cat);
             if (_gui.plots.length > 2){
                 var old = _gui.plots.shift();
-                $('#databrowser th[rel='+old+']').children('input').prop('checked', false);
+                $('#databrowser th[rel=' + old + ']').children('input').prop('checked', false);
             }
         } else {
             $(this).parent().removeClass('selected');
@@ -903,7 +926,7 @@ function resp__browse(req, data){
         }
 
         $.each(_gui.plots, function(n, i){
-            $('#databrowser td[rel='+i+'], #databrowser th[rel='+i+']').addClass('selected');
+            $('#databrowser td[rel=' + i + '], #databrowser th[rel=' + i + ']').addClass('selected');
         });
 
         if (_gui.plots.length) switch_menus(2);
@@ -915,10 +938,10 @@ function resp__browse(req, data){
         var plinks = '';
         var anchor_base = window.location.hash.substr(1).split('/').slice(0, 2).join('/');
         if (anchor_base == 'start') anchor_base = 'found'; // FIXME
-        for (var i=1; i<(pcount+1); i++){
+        for (var i = 1; i<(pcount+1); i++){
             var active_class = '';
-            if (i == req.start+1) active_class = ' pglink_active';
-            if (i > Math.round(_gui.cwidth/75)) break; // FIXME
+            if (i == req.start + 1) active_class = ' pglink_active';
+            if (i > Math.round(_gui.cwidth / 75)) break; // FIXME
             plinks += '<a class="pglink' + active_class + '" href="#' + anchor_base + '/' + i + '">' + i + '</a>';
         }
         $('a.pglink').remove();
@@ -926,11 +949,15 @@ function resp__browse(req, data){
     } else $('div.data_ctrl').hide();
 
     var count_msg = 'Found: ' + data.count;
-    var high_bound = ((req.start+1) * _gui.settings.colnum > data.count) ? data.count : (req.start+1) * _gui.settings.colnum;
+    var high_bound = ((req.start +1 ) * _gui.settings.colnum > data.count) ? data.count : (req.start + 1) * _gui.settings.colnum;
     if (data.count > _gui.settings.colnum) count_msg += ' (' + (req.start * _gui.settings.colnum + 1) + '-' + high_bound + ' shown)';
     document.title = count_msg;
 
-    if (req.conditions && window.location.hash.indexOf('found') == -1) window.location.hash = '#found/condition'; // FIXME
+    if (req.conditions && window.location.hash.indexOf('found') == -1)
+        window.location.hash = '#found/condition'; // FIXME
+
+    else if (req.hashes)
+        render_wintabs(req.hashes);
 }
 
 function resp__tags(req, data){
@@ -1035,24 +1062,26 @@ function resp__tags(req, data){
 }
 
 function resp__summary(req, data){
-    var target_cell = $('#i_'+req.datahash);
-    if (!target_cell.length) return notify('Data mismatch: received information cannot be properly displayed!');
 
-    var obf = $('<tr class=obj_holder></tr>').append( $('<th colspan=20></th>').append( $('#object_factory').clone().removeAttr('id').attr('id', 'o_'+req.datahash) ) );
+    var target_cell = $('#i_' + req.datahash);
+    if (!target_cell.length)
+        return; // Data mismatch: received information cannot be properly displayed
+
+    var obf = $('<tr class=obj_holder></tr>').append( $('<th colspan=20></th>').append( $('#object_factory').clone().removeAttr('id').attr('id', 'o_' + req.datahash) ) );
     target_cell.after(obf);
 
     // INPUT IPANE
     if (data.info.input){
-        $('#o_'+req.datahash+' ul.ipane_ctrl li[rel=inp]').show();
+        $('#o_' + req.datahash + ' ul.ipane_ctrl li[rel=inp]').show();
         data.info.input = data.info.input.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-        $('#o_'+req.datahash + ' div[rel=inp]').append('<div class=preformatter style="width:'+(_gui.cwidth/2-60)+'px;">'+data.info.input+'</div>');
+        $('#o_' + req.datahash + ' div[rel=inp]').append('<div class=preformatter style="width:' + (_gui.cwidth/2-60) + 'px;">' + data.info.input + '</div>');
     }
 
     // OPTGEOM IPANE
-    if (data.info.optgeom === true){  $('#o_'+req.datahash+' ul.ipane_ctrl li[rel=optstory]').show() }
+    if (data.info.optgeom === true) $('#o_' + req.datahash + ' ul.ipane_ctrl li[rel=optstory]').show();
 
     // ESTORY IPANE
-    $('#o_'+req.datahash+' ul.ipane_ctrl li[rel=estory]').show();
+    $('#o_' + req.datahash + ' ul.ipane_ctrl li[rel=estory]').show();
 
     // SUMMARY (MAIN) IPANE
     var html = '';
@@ -1063,12 +1092,12 @@ function resp__summary(req, data){
         //}
     });
     if (data.info.warns){
-        for (var i=0; i<data.info.warns.length; i++){
+        for (var i = 0; i<data.info.warns.length; i++){
             html += '<li class=warn>'+data.info.warns[i]+'</li>';
         }
     }
     html += '</ul></div>';
-    $('#o_'+req.datahash + ' div[rel=summary]').append('<div class=summary>'+html+'</div>');
+    $('#o_' + req.datahash + ' div[rel=summary]').append('<div class=summary>'+html+'</div>');
     $('span._e').each(function(){
         var val = parseFloat( $(this).text() );
         if (val) $(this).text( ( Math.round(val * _gui.units.energy[ _gui.settings.units.energy ] * Math.pow(10, 5))/Math.pow(10, 5) ).toFixed(5) );
@@ -1191,12 +1220,14 @@ $(document).ready(function(){
 
     // DELETE OBJECT TAB
     $(document.body).on('click', 'div._destroy', function(){
-        var id = $(this).parent().parent().parent().attr('id').substr(2);
+        var id = $(this).parent().parent().attr('id');
+        if (!id) id = $(this).parent().parent().parent().attr('id');
+        id = id.substr(2);
 
-        close_obj_tab(id);
+        destroy_wintab(id);
 
         var anchors = window.location.hash.substr(1).split('/');
-        if (anchors.length !== 2) return notify('Unexpected error, please, report this to the developers!');
+        if (anchors.length != 2) return console.log('Unexpected error, please, report this to the developers');
 
         var hashes = anchors[1].split('+').filter(function(item){
             return (item.slice(0, id.length) !== id);
@@ -1291,6 +1322,7 @@ $(document).ready(function(){
         if (anchors[0] == 'show' && anchors[1]){
             if (anchors[1].indexOf(id) == -1) window.location.hash += '+' + id;
             else return;
+
         } else {
             window.location.hash = '#show/' + id;
         }
@@ -1308,7 +1340,7 @@ $(document).ready(function(){
 
         var hashes = anchors[1].split('+');
         $.each(hashes, function(n, i){
-            close_obj_tab(i);
+            destroy_wintab(i);
         });
         window.location.replace( '#' + _gui.settings.dbs[0] + '/browse' );
     });*/
