@@ -97,7 +97,7 @@ div.caption{width:90%;background:#ddd;text-align:center;line-height:20px;color:#
 
 /* OBJECT CONTEXT PANE */
 
-#object_factory{display:none;}
+#object_factory, #pdf_viewer_factory{display:none;}
 div.object_factory_holder{z-index:50;width:99%;height:545px;margin:16px auto;background:#fff;border:1px solid #000;border-radius:6px;}
 div.object_holder{z-index:51;background:url(data:image/gif;base64,R0lGODlhKAAUAJEAAAAAAP///////wAAACH5BAEAAAIALAAAAAAoABQAAAJOlI+JAOoPHQihxYvFpDV7tXHd94XiSF7miaYSy1pussKUPGu2jaf1zul5fsCgr1gUQohIkRLUbD4PzOhpWrVeX1prL9uNUcPhBpgMAxQAADs=) center top no-repeat;margin:-20px 0 10px;padding-top:28px;}
 div.object_ctx_left{float:left;width:49%;background:#fff;}
