@@ -35,12 +35,12 @@ _gui.units = {
 _gui.unit_capts = {'energy':'Energy', 'phonons':'Phonon frequencies'};
 _gui.default_settings = {};
 _gui.default_settings.units = {'energy':'eV', 'phonons':'cm<sup>-1</sup>'};
-_gui.default_settings.cols = [1, 1002, 1501, 7, 50, 22, 23, 27, 1005]; // cid's of hierarchy API
+_gui.default_settings.cols = [1, 1501, 7, 50, 22, 23, 27, 1701, 1702, 1703]; // cid's of hierarchy API
 _gui.default_settings.colnum = 100;
 //_gui.default_settings.objects_expand = true;
 _gui.permaurl = window.location.protocol + '//' + window.location.host + window.location.pathname;
 _gui.ws_server = null;
-_gui.file_relay_server = 'http://tilde.pro/services/fileadmin'; // http://localhost:9991
+_gui.file_relay_server = 'https://tilde.pro/fileadmin/papers'; // 'http://localhost:9991';
 
 window.playerdata = {}; // player.html iframe integration
 
@@ -291,7 +291,7 @@ function bands_plotter(req, plot, divclass, ordinate){
 }
 
 function export_data(data){
-    var ref = window.open('', 'export' + Math.floor(Math.random()*100));
+    var ref = window.open('', 'export' + Math.floor(Math.random() * 100));
     var dump = '';
     for (var j=0; j < data[0].data.length; j++){
         dump += data[0].data[j][0] + '\t';
@@ -1246,7 +1246,7 @@ $(document).ready(function(){
     $('#databrowser').on('click', 'td', function(){
         if ($(this).parent().attr('id')) var id = $(this).parent().attr('id').substr(2);
         else return;
-        $('#d_cb_' + id).trigger('click');
+        $('#d_cb_' + id).trigger('click'); // input.SHFT_cb
     });
 
     // DATABROWSER CHECKBOXES
@@ -1261,7 +1261,7 @@ $(document).ready(function(){
             var $chkboxes = $('input.SHFT_cb');
             var start = $chkboxes.index(this);
             var end = $chkboxes.index(_gui.last_chkbox);
-            $chkboxes.slice(Math.min(start,end) + 1, Math.max(start,end)).trigger('click');
+            $chkboxes.slice(Math.min(start, end) + 1, Math.max(start, end)).trigger('click');
         }
 
         _gui.last_chkbox = this;
@@ -1290,7 +1290,7 @@ $(document).ready(function(){
         $('select.default_order_ctrl').val(val);
 
         var search_base = _gui.search_hash.substr(1).split('/').slice(0, 2).join('/');
-        if (_gui.search_hash.substr(_gui.search_hash.length-2) == '/0') window.location.hash = '#' + search_base;
+        if (_gui.search_hash.substr(_gui.search_hash.length - 2) == '/0') window.location.hash = '#' + search_base;
         else window.location.hash = '#' + search_base + '/0';
     });
 
@@ -1315,6 +1315,13 @@ $(document).ready(function(){
         $('input.SHFT_cb').prop('checked', false);
         $('#databrowser tr').removeClass('selected');
         switch_menus();
+
+        // Download content in a separate window
+        if (id.substr(id.length - 3) == 'PDF'){
+            var filename = $('#i_' + id).attr('data-filename');
+            if (filename == 'NONCE') return alert('Sorry, this item is missing!');
+            return window.open(_gui.file_relay_server + '/' + filename);
+        }
 
         if (_gui.rendered.indexOf(id) > -1) return;
 
@@ -1385,7 +1392,7 @@ $(document).ready(function(){
         var data = gather_plots_data(), dump = '';
         if (!data) return;
 
-        var ref = window.open('', 'export' + Math.floor(Math.random()*100));
+        var ref = window.open('', 'export' + Math.floor(Math.random() * 100));
         for (var j=0; j < data[0].length; j++){
             for (var i=0; i < data.length-1; i++){ // skip ids!
                 dump += data[i][j] + '\t';
