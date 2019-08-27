@@ -7,7 +7,7 @@
 //"use strict";
 
 var _gui = {};
-_gui.version = '0.8.5';
+_gui.version = '0.9.0';
 _gui.title = '';
 _gui.debug_regime = false;
 _gui.rendered = [];
